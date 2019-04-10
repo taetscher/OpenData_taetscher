@@ -1,0 +1,24 @@
+svg {
+    background: #efefef
+}
+
+body {
+    color: black;
+    background-color: slategray;
+}
+
+h1 {
+    color: papayawhip;
+    font-size: 35;
+    text-align: center;
+}
+
+.kantone{
+    fill: #cccccc;
+    stroke: #333333;
+    stroke-width: 1;
+}
+
+.selected{
+    fill: yellow
+}

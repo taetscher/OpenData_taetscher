@@ -1,2 +1,2 @@
-# OpenData_taetscher
-OpenData19 Repository
+# OpenData19
+Repository fuer die OpenData Uebungen 2019
