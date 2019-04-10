@@ -18,11 +18,15 @@
     // set imports        
     var infile1 = "data/kantone_topo.json";
     var infile2 = "data/flusstemperaturen.json";
+    var infile3 = "data/weatherstations.json";
+    
+    
     
     //read in files
     d3.queue()
         .defer(d3.json, infile1)
         .defer(d3.json, infile2)
+        .defer(d3.json, infile3)
         .await(ready);
     
     // create projection and center it
@@ -37,7 +41,7 @@
     
     
     // load geometries, add to svg
-    function ready (error, data, infile2) {
+    function ready (error, data, infile2, infile3) {
         
     //loading data for infile1
     var kantone = topojson.feature(data, data.objects.kantone).features;
@@ -66,20 +70,45 @@
         svg.selectAll(".flussMess")
             .data(flussMess)
             .enter().append("circle")
-            .attr("r", 5)
+            .attr("r", 3)
+            .attr("fill", "yellow")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
-                console.log("long", coords)
+                //console.log("long", coords)
                 return coords[0];
             })
         
             .attr("cy",  function(d){
                 // get latitude from data
                 var coords = projection(d.geometry.coordinates)
-                console.log("lat", coords)
+                //console.log("lat", coords)
                 return coords[1];
             })
+        
+    // loading data for infile3
+    var wetter = topojson.feature(infile3, infile3.objects.weatherstation).features;
+    console.log("wetter", wetter)
+        
+            svg.selectAll(".wetter")
+            .data(wetter)
+            .enter().append("circle")
+            .attr("r", 2)
+            .attr("cx", function(d){
+                // get longitude from data (coordinates [long/lat])
+                var coords = projection(d.geometry.coordinates)
+                //console.log("long", coords)
+                return coords[0];
+            })
+        
+            .attr("cy",  function(d){
+                // get latitude from data
+                var coords = projection(d.geometry.coordinates)
+                //console.log("lat", coords)
+                return coords[1];
+            })
+        
+        
             
     }
 
