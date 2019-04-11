@@ -94,6 +94,7 @@
             .data(wetter)
             .enter().append("circle")
             .attr("r", 2)
+            .attr("fill", "red")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
