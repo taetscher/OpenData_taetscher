@@ -1,19 +1,9 @@
-(function () {
-    
-    // set up margins
-    var margin = { top: 100, left: 100, right: 50, bottom: 100},
-        height = 1000 - margin.top - margin.bottom,
-        width = 1500 - margin.left - margin.right;
-    
-    console.log("height, width", height, width)
-    
     // add svg element to body
     var svg = d3.select("#map")
-                .append("svg")
-                .attr("height", height + margin.top + margin.bottom)
-                .attr("width", width + margin.left + margin.right)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        .append("svg")
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1000 600")
+        .classed("map-content", true);
     
     // set imports        
     var infile1 = "data/kantone_topo.json";
@@ -31,8 +21,8 @@
     
     // create projection and center it
     var projection = d3.geoMercator()
-        //centering the map on screen
-        .translate([-900, 9600])
+        //centering the map on screen (do not fuck with these values!)
+        .translate([-940, 9555])
         .scale(10000);
     
     // create path (geoPath) using the projection
@@ -71,7 +61,7 @@
             .data(flussMess)
             .enter().append("circle")
             .attr("r", 3)
-            .attr("fill", "yellow")
+            .attr("fill", "blue")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
@@ -93,8 +83,8 @@
             svg.selectAll(".wetter")
             .data(wetter)
             .enter().append("circle")
-            .attr("r", 2)
-            .attr("fill", "red")
+            .attr("r", 3)
+            .attr("fill", "white")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
@@ -112,13 +102,3 @@
         
             
     }
-
-
-            
-
-    
-    
-    
-    
-    
-})();
