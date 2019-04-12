@@ -1,4 +1,4 @@
-map-container {
+row-map {
     display: inline-block;
     position: relative;
     width: 100%;
@@ -20,10 +20,15 @@ body {
 }
 
 h1 {
-    color: papayawhip;
-    font-size: 35;
+    color: black;
     text-align: center;
-    background-color: #cccccc;
+    margin: 0;
+    font-family: 'Open Sans', sans-serif;
+}
+
+h2 {
+    color: black;
+    text-align: center;
     margin: 0;
     font-family: 'Open Sans', sans-serif;
 }
@@ -43,5 +48,22 @@ h1 {
 }
 
 #section1 {
-    background-color: #cccccc
+    background-color: #cccccc;
+}
+
+#sidebar {
+    background-color: red;
+}
+
+#section2 {
+    
+}
+
+#metadata {
+    background-color: #cccccc;
+    
+}
+
+#authors {
+    background-color: #cccccc;
 }

@@ -1,4 +1,4 @@
-    // add svg element to body
+    // add svg element to body, make it scalable
     var svg = d3.select("#map")
         .append("svg")
         .attr("preserveAspectRatio", "xMinYMin meet")
