@@ -1,69 +1,67 @@
-row-map {
-    display: inline-block;
-    position: relative;
-    width: 100%;
-    padding-bottom: 100%;
-    vertical-align: top;
-    overflow: hidden;
-}
-
-map-content {
-    display: inline-block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: slategray;
-}
-
 body {
-    color: #cccccc;
-}
-
-h1 {
-    color: black;
-    text-align: center;
-    margin: 0;
-    font-family: 'Open Sans', sans-serif;
-}
-
-h2 {
-    color: black;
-    text-align: center;
-    margin: 0;
-    font-family: 'Open Sans', sans-serif;
-}
-
-.kantone{
-    fill: #cccccc;
-    stroke: #333333;
-    stroke-width: 1;
-}
-
-.selected{
-    fill: yellow;
-}
-
-#map {
     background-color: #cccccc;
 }
+
+    h1 {
+        color: black;
+        text-align: center;
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    h2 {
+        color: darkslategray;
+        text-align: center;
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    h3 {
+        color: deeppink;
+                text-align: center;
+                margin: 0;
+                font-family: 'Open Sans', sans-serif;
+    }
+
+
 
 #section1 {
     background-color: #cccccc;
 }
 
-#sidebar {
-    background-color: red;
-}
+    #map {
+        
+    }
+
+    .kantone{
+        fill: #cccccc;
+        stroke: #333333;
+        stroke-width: 1;
+    }
+
+    .selected{
+        fill: yellow;
+    }
+
+    #sidebar {
+        background-color: red;
+    }
+
+
 
 #section2 {
-    
+    background-color: #cccfff;
 }
 
-#metadata {
-    background-color: #cccccc;
-    
-}
+    #metadata {
+        
+    }
 
-#authors {
-    background-color: #cccccc;
+    #authors {
+        
+    }
+
+#section3 {
+    background-color: khaki;
+    
 }
