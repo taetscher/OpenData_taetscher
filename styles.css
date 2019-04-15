@@ -1,5 +1,5 @@
 body {
-    background-color: #cccccc;
+    background: linear-gradient(to bottom, #ffcc00 0%, #ff9933 100%);
 }
 
     h1 {
@@ -23,10 +23,14 @@ body {
                 font-family: 'Open Sans', sans-serif;
     }
 
+    p {
+        font-family: 'Open Sans', sans-serif;
+    }
+
 
 
 #section1 {
-    background-color: #cccccc;
+
 }
 
     #map {
@@ -44,13 +48,14 @@ body {
     }
 
     #sidebar {
-        background-color: red;
+        border-style: solid;
+        border-width: thin;
     }
 
 
 
 #section2 {
-    background-color: #cccfff;
+    
 }
 
     #metadata {
