@@ -36,7 +36,7 @@
             <div class="row">
                 
                 <div id="map" class="col-sm-12 col-md-12 col-lg-9">
-                    <script src="buffer.js"></script>
+                    
                     <script src="swissmap_visualization.js"></script>    
                 </div>
 
@@ -50,8 +50,9 @@
                     <form>
                         <div>
                             <label for="BufferSlider">Bufferdistanz (Genauigkeit) festlegen</label>
-                            <input type="range" class="custom-range" min="0" max="0.2" step="0.01" id="BufferSlider">
+                            <input type="range" class="range-field" min="0" max="0.2" step="0.01" id="BufferSlider">
                             <output id="BufferSliderOutput"></output>
+                            <script src="buffer.js"></script>
                         </div>
                     </form>
                     
