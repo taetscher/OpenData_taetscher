@@ -90,14 +90,12 @@ function ready (error, data, infile2, infile3, infile4) {
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
-                //console.log("long", coords)
                 return coords[0];
             })
         
             .attr("cy",  function(d){
                 // get latitude from data
                 var coords = projection(d.geometry.coordinates)
-                //console.log("lat", coords)
                 return coords[1];
             })
         
@@ -111,6 +109,14 @@ function ready (error, data, infile2, infile3, infile4) {
             .attr("class", "lakes")
             .attr("d", path);
         
+    // adding event listener for slider to allow for user defined visualization
+    d3.select("#BufferSlider").on("change", function(d){
+        var buff = this.value
+        d3.select("#svg")
+        svg.selectAll("circle").attr("r", buff)
+        })
             
     }
+
+
 
