@@ -1,5 +1,5 @@
 body {
-    background: linear-gradient(to bottom, #ffcc00 0%, #ff9933 100%);
+    background: white;
 }
 
     h1 {
@@ -37,19 +37,26 @@ body {
         
     }
 
-    .kantone{
-        fill: #cccccc;
-        stroke: #333333;
-        stroke-width: 1;
-    }
+        .kantone{
+            fill: #CB904D;
+            stroke: #333333;
+            stroke-width: 1;
+        }
 
-    .selected{
-        fill: yellow;
-    }
+        .lakes{
+            fill: #C5E4F7;
+            stroke: #333333;
+            stroke-width: 1;
+
+        }
+
+        .selected{
+            fill: yellow;
+        }
 
     #sidebar {
-        border-style: solid;
-        border-width: thin;
+        border-left-style: solid;
+        border-left-width: thin;
     }
 
 

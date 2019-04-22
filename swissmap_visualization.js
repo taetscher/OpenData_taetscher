@@ -1,37 +1,38 @@
-    // add svg element to body, make it scalable
-    var svg = d3.select("#map")
-        .append("svg")
-        .attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("viewBox", "0 0 1000 600")
-        .classed("map-content", true);
+// add svg element to body, make it scalable
+var svg = d3.select("#map")
+    .append("svg")
+    .attr("preserveAspectRatio", "xMinYMin meet")
+    .attr("viewBox", "0 0 1000 600")
+    .classed("map-content", true);
     
-    // set imports        
-    var infile1 = "data/kantone_topo.json";
-    var infile2 = "data/flusstemperaturen.json";
-    var infile3 = "data/weatherstations.json";
-    
-    
-    
-    //read in files
-    d3.queue()
-        .defer(d3.json, infile1)
-        .defer(d3.json, infile2)
-        .defer(d3.json, infile3)
-        .await(ready);
-    
-    // create projection and center it
-    var projection = d3.geoMercator()
-        //centering the map on screen (do not fuck with these values!)
-        .translate([-940, 9555])
-        .scale(10000);
-    
-    // create path (geoPath) using the projection
-    var path = d3.geo.path().projection(projection);
+// set layer imports        
+var infile1 = "data/kantone_topo.json";
+var infile2 = "data/flusstemperaturen.json";
+var infile3 = "data/weatherstations.json";
+var infile4 = "data/swissLakes_topo.json";
     
     
     
-    // load geometries, add to svg
-    function ready (error, data, infile2, infile3) {
+//read in files
+d3.queue()
+    .defer(d3.json, infile1)
+    .defer(d3.json, infile2)
+    .defer(d3.json, infile3)
+    .defer(d3.json, infile4)
+    .await(ready);
+    
+// create projection and center it
+var projection = d3.geoMercator()
+    //centering the map on screen (do not fuck with these values!)
+    .translate([-940, 9555])
+    .scale(10000);
+    
+// create path (geoPath) using the projection
+var path = d3.geo.path().projection(projection);
+    
+    
+// load geometries, add to svg
+function ready (error, data, infile2, infile3, infile4) {
         
     //loading data for infile1
     var kantone = topojson.feature(data, data.objects.kantone).features;
@@ -44,12 +45,13 @@
             .attr("d", path)
         
             //add hover-over mechanic
-            .on('mouseover', function(d){
-                d3.select(this).classed("selected", true)
-            })
-            .on('mouseout', function(d){
-                d3.select(this).classed("selected", false)
-            });
+            //.on('mouseover', function(d){
+                //d3.select(this).classed("selected", true)
+            //})
+            //.on('mouseout', function(d){
+                //d3.select(this).classed("selected", false)
+            //})
+            ;
            
         
     //loading data for infile2
@@ -99,6 +101,16 @@
                 return coords[1];
             })
         
+    // loading data for infile4
+    var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
+    console.log("swissLakes", lakes);
+        
+            svg.selectAll(".lakes")
+            .data(lakes)
+            .enter().append("path")
+            .attr("class", "lakes")
+            .attr("d", path);
         
             
     }
+
