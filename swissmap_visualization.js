@@ -63,6 +63,7 @@ function ready (error, data, infile2, infile3, infile4) {
             .data(flussMess)
             .enter().append("circle")
             .attr("r", 3)
+            .attr("fill-opacity", "0.7")
             .attr("fill", "blue")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
@@ -86,6 +87,7 @@ function ready (error, data, infile2, infile3, infile4) {
             .data(wetter)
             .enter().append("circle")
             .attr("r", 3)
+            .attr("fill-opacity", "0.7")
             .attr("fill", "white")
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
