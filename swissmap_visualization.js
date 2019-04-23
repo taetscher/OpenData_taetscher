@@ -60,11 +60,11 @@ function ready (error, data, infile2, infile3, infile4) {
         
         if (d3.select(this).attr("class") == "wetter"){
             console.log(d3.select(this).attr("class"))
-            Tooltip.html(d.properties.stn + "<br>")
+            Tooltip.html(d.properties.Name + "<br>")
             
         } else {
             console.log(d3.select(this).attr("class"))
-            Tooltip.html(d.name + "<br>")
+            Tooltip.html(d.properties.name + "<br>")
             
         }
         
