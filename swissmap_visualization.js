@@ -10,6 +10,7 @@ var infile1 = "data/kantone_topo.json";
 var infile2 = "data/flusstemperaturen.json";
 var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
+var infile5 = "data/eierhals/hotel_eierhals.json";
     
     
     
@@ -19,7 +20,10 @@ d3.queue()
     .defer(d3.json, infile2)
     .defer(d3.json, infile3)
     .defer(d3.json, infile4)
+    .defer(d3.json, infile5)
     .await(ready);
+
+
     
 // create projection and center it
 var projection = d3.geoMercator()
@@ -32,7 +36,7 @@ var path = d3.geo.path().projection(projection);
     
     
 // load geometries, add to svg, add tooltip mechanic and slider bars etc.
-function ready (error, data, infile2, infile3, infile4) {
+function ready (error, data, infile2, infile3, infile4, infile5) {
     
     // add Tooltip (Popup)
     var Tooltip = d3.select("#map")
@@ -76,7 +80,7 @@ function ready (error, data, infile2, infile3, infile4) {
     var mouseleave = function(d) {
         Tooltip.style("opacity", 0)
     }
-        
+    
     //loading data for infile1
     var kantone = topojson.feature(data, data.objects.kantone).features;
         console.log("kantone", kantone)
@@ -99,42 +103,11 @@ function ready (error, data, infile2, infile3, infile4) {
             .attr("class", "lakes")
             .attr("d", path)
     
-            // Move this part to the layer that should be affected by eierhals shenanigans
-            .on("mouseover", function(d){
-                if (eiercheck){
-                    svg.selectAll(".eierhals")
-                        .attr("display", "block")
-                        }
-                else {svg.selectAll(".eierhals")
-                        .attr("display", "none")}
-            })
-            .on("mousemove", function(d){
-                    svg.selectAll(".eierhals")
-            })
-            .on("mouseleave", function(d){
-                        svg.selectAll(".eierhals")
-                        .attr("display", "none")})
-            //----------------------------------------------------------------------------
+            
 
     
     
-    //Eiercheck
-    var eiercheck = d3.select("#Eiercheck").property("checked")
-    var eier = svg.selectAll("image").data([0]);
-        eier.enter()
-        .append("svg:image")
-        .attr("xlink:href", "data/eierhals/eierhals3.jpeg")
-        .attr("x", "300")
-        .attr("y", "100")
-        .attr("class", "eierhals")
-        .attr("display", "none")
-                     
-    d3.select("#Eiercheck").on("change",function(d){
-        eiercheck = d3.select("#Eiercheck").property("checked")
-        console.log("Eiercheckd ", eiercheck)
-        });
-           
-        
+    
     //loading data for infile2
     var flussMess = topojson.feature(infile2, infile2.objects.flusstemperaturen).features;
     console.log("flussMess", flussMess)
@@ -234,6 +207,66 @@ function ready (error, data, infile2, infile3, infile4) {
         }
         });
     
+    //loading data for infile5
+    var hotel_eierhals = topojson.feature(infile5, infile5.objects.hotel_eierhals).features;
+    console.log("EIERHALS", hotel_eierhals)
+        
+        
+        svg.selectAll(".hotel_eierhals")
+            .data(hotel_eierhals)
+            .enter().append("circle")
+            .attr("class", "hotel_eierhals")
+            .attr("r", 4)
+            .attr("fill-opacity", "0.0000001")
     
+            // Move this part to the layer that should be affected by eierhals shenanigans
+            .on("mouseover", function(d){
+                if (eiercheck){
+                    svg.selectAll(".eierhals")
+                        .attr("display", "block")
+                    console.log("Hotel Eierhals: http://www.hotel-eierhals.ch/")
+                        }
+                else {svg.selectAll(".eierhals")
+                        .attr("display", "none")}
+            })
+            .on("mousemove", function(d){
+                    svg.selectAll(".eierhals")
+            })
+            .on("mouseleave", function(d){
+                        svg.selectAll(".eierhals")
+                        .attr("display", "none")})
+            //----------------------------------------------------------------------------
+    
+            .attr("cx", function(d){
+                // get longitude from data (coordinates [long/lat])
+                var coords = projection(d.geometry.coordinates)
+                console.log("long", coords)
+                return coords[0];
+            })
+        
+            .attr("cy",  function(d){
+                // get latitude from data
+                var coords = projection(d.geometry.coordinates)
+                console.log("lat", coords)
+                return coords[1];
+            })
+    
+    //Eiercheck
+    var eiercheck = d3.select("#Eiercheck").property("checked")
+    var eier = svg.selectAll("image").data([0]);
+        eier.enter()
+        .append("svg:image")
+        .attr("xlink:href", "data/eierhals/eierhals3.jpeg")
+        .attr("x", "300")
+        .attr("y", "100")
+        .attr("class", "eierhals")
+        .attr("display", "none")
+                     
+    d3.select("#Eiercheck").on("change",function(d){
+        eiercheck = d3.select("#Eiercheck").property("checked")
+        console.log("Eiercheckd ", eiercheck)
+        });
+           
+        
     
     }
