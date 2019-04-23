@@ -92,14 +92,34 @@ function ready (error, data, infile2, infile3, infile4) {
     console.log("swissLakes", lakes);
     
     //Actually Appending lakes
+    
             svg.selectAll(".lakes")
             .data(lakes)
             .enter().append("path")
             .attr("class", "lakes")
             .attr("d", path)
     
+            // Move this part to the layer that should be affected by eierhals shenanigans
+            .on("mouseover", function(d){
+                if (eiercheck){
+                    svg.selectAll(".eierhals")
+                        .attr("display", "block")
+                        }
+                else {svg.selectAll(".eierhals")
+                        .attr("display", "none")}
+            })
+            .on("mousemove", function(d){
+                    svg.selectAll(".eierhals")
+            })
+            .on("mouseleave", function(d){
+                        svg.selectAll(".eierhals")
+                        .attr("display", "none")})
+            //----------------------------------------------------------------------------
+
+    
     
     //Eiercheck
+    var eiercheck = d3.select("#Eiercheck").property("checked")
     var eier = svg.selectAll("image").data([0]);
         eier.enter()
         .append("svg:image")
@@ -111,19 +131,7 @@ function ready (error, data, infile2, infile3, infile4) {
                      
     d3.select("#Eiercheck").on("change",function(d){
         eiercheck = d3.select("#Eiercheck").property("checked")
-        
-        if (eiercheck) {
-            svg.selectAll(".eierhals")
-                .transition()
-                .duration(1000)
-                .attr("display", "block")
-            
-        } else {
-            svg.selectAll(".eierhals")
-                .transition()
-                .duration(1000)
-                .attr("display", "none")
-        }
+        console.log("Eiercheckd ", eiercheck)
         });
            
         
