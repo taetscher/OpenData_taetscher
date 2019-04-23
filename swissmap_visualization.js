@@ -35,7 +35,6 @@ var path = d3.geo.path().projection(projection);
 function ready (error, data, infile2, infile3, infile4) {
     
     // add Tooltip (Popup)
-    // create a tooltip
     var Tooltip = d3.select("#map")
       .append("div")
       .attr("class", "tooltip")
@@ -57,14 +56,13 @@ function ready (error, data, infile2, infile3, infile4) {
             .style("left", cx + "px")
             .style("top", cy + "px")
             
-        
+        // if mouse hovers over wetter, read in metadata from weather
         if (d3.select(this).attr("class") == "wetter"){
-            console.log(d3.select(this).attr("class"))
-            Tooltip.html(d.properties.Name + "<br>")
+            Tooltip.html("<strong>"+d.properties.Name+"</strong>" + " (" + d.properties.Station + ")" + "<br>" + "Höhe (m.ü.M): " + d.properties.Höhe + "<br>" + "Temperatur (°C): " + d.properties["Temperatur (°C)"] + "<br>" + "Luftfeuchtigkeit (%): " + d.properties["Luftfeuchte (%)"] + "<br>" + "Niederschlag (mm): " + d.properties["Niederschlag (mm)"])
             
+        // if mouse hovers over flussMess, read in metadata from flussMess    
         } else {
-            console.log(d3.select(this).attr("class"))
-            Tooltip.html(d.properties.name + "<br>")
+            Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + d.properties.param + "klasse: " + d.properties["temp-class"] + "<br>")
             
         }
         
