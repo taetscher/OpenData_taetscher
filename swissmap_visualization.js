@@ -31,7 +31,7 @@ var projection = d3.geoMercator()
 var path = d3.geo.path().projection(projection);
     
     
-// load geometries, add to svg
+// load geometries, add to svg, add tooltip mechanic and slider bars etc.
 function ready (error, data, infile2, infile3, infile4) {
     
     // add Tooltip (Popup)
@@ -39,7 +39,7 @@ function ready (error, data, infile2, infile3, infile4) {
     var Tooltip = d3.select("#map")
       .append("div")
       .attr("class", "tooltip")
-      .style("opacity", 1)
+      .style("opacity", 0)
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "1px")
@@ -48,14 +48,23 @@ function ready (error, data, infile2, infile3, infile4) {
 
     // Three function that change the tooltip when user hover / move / leave a cell
     var mouseover = function(d) {
-      Tooltip.style("opacity", 1)
+        
+        var cx = d3.mouse(this)[0]+10 
+        var cy = d3.mouse(this)[1] 
+        
+        
+        
+        Tooltip
+            .style("left", cx + "px")
+            .style("top", cy + "px")
+            .html("<h6>" + d.properties.name + "</h6>" + "<br>")
     }
     var mousemove = function(d) {
-      Tooltip
-        .style("left", (d3.mouse(this)[0]+10) + "px")
-        .style("top", (d3.mouse(this)[1]) + "px")
-        console.log(d3.mouse(this) [0])
-        console.log(d3.mouse(this) [1])
+        
+        Tooltip.style("opacity", 1)
+        
+        
+
     }
     var mouseleave = function(d) {
       Tooltip.style("opacity", 0)
