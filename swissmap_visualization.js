@@ -33,6 +33,33 @@ var path = d3.geo.path().projection(projection);
     
 // load geometries, add to svg
 function ready (error, data, infile2, infile3, infile4) {
+    
+    // add Tooltip (Popup)
+    // create a tooltip
+    var Tooltip = d3.select("#map")
+      .append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 1)
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "1px")
+      .style("padding", "5px")
+
+    // Three function that change the tooltip when user hover / move / leave a cell
+    var mouseover = function(d) {
+      Tooltip.style("opacity", 1)
+    }
+    var mousemove = function(d) {
+      Tooltip
+        .style("left", (d3.mouse(this)[0]) + "px")
+        .style("top", (d3.mouse(this)[1]) + "px")
+        console.log(d3.mouse(this) [0])
+        console.log(d3.mouse(this) [1])
+    }
+    var mouseleave = function(d) {
+      Tooltip.style("opacity", 0)
+    }
         
     //loading data for infile1
     var kantone = topojson.feature(data, data.objects.kantone).features;
@@ -62,9 +89,13 @@ function ready (error, data, infile2, infile3, infile4) {
         svg.selectAll(".flussMess")
             .data(flussMess)
             .enter().append("circle")
+            .attr("class", "flussMess")
             .attr("r", 3)
             .attr("fill-opacity", "0.7")
             .attr("fill", "blue")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
@@ -86,9 +117,13 @@ function ready (error, data, infile2, infile3, infile4) {
             svg.selectAll(".wetter")
             .data(wetter)
             .enter().append("circle")
+            .attr("class", "wetter")
             .attr("r", 3)
             .attr("fill-opacity", "0.7")
             .attr("fill", "white")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
             .attr("cx", function(d){
                 // get longitude from data (coordinates [long/lat])
                 var coords = projection(d.geometry.coordinates)
@@ -121,23 +156,31 @@ function ready (error, data, infile2, infile3, infile4) {
         svg.selectAll("circle").transition().duration(1000).attr("r", buff)
         });
     
-    // enable/disable stuff
+    
+    // enable/disable Wettermesstationen
     d3.select("#CheckLayer1").on("change",function(d){
         checked = d3.select("#CheckLayer1").property("checked")
-        console.log(checked)
         
         if (checked) {
-            d3.select("#svg")
-            svg.selectAll("circle").transition().duration(1000).attr("display", "block")
+            svg.selectAll(".wetter").transition().duration(1000).attr("display", "block")
             
         } else {
-            d3.select("#svg")
-            svg.selectAll("circle").transition().duration(1000).attr("display", "none")
+            svg.selectAll(".wetter").transition().duration(1000).attr("display", "none")
         }
-        
-        
-        
         });
+    
+    // enable/disable Flusstemperaturmesstationen
+    d3.select("#CheckLayer2").on("change",function(d){
+        checked = d3.select("#CheckLayer2").property("checked")
+        
+        if (checked) {
+            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
+            
+        } else {
+            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
+        }
+        });
+    
     
     
     }
