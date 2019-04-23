@@ -91,6 +91,15 @@ function ready (error, data, infile2, infile3, infile4) {
     var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
     console.log("swissLakes", lakes);
     
+    //Actually Appending lakes
+            svg.selectAll(".lakes")
+            .data(lakes)
+            .enter().append("path")
+            .attr("class", "lakes")
+            .attr("d", path)
+    
+    
+    //Eiercheck
     var eier = svg.selectAll("image").data([0]);
         eier.enter()
         .append("svg:image")
@@ -99,22 +108,23 @@ function ready (error, data, infile2, infile3, infile4) {
         .attr("y", "100")
         .attr("class", "eierhals")
         .attr("display", "none")
+                     
+    d3.select("#Eiercheck").on("change",function(d){
+        eiercheck = d3.select("#Eiercheck").property("checked")
         
-        function eierhals(d){
-            console.log("EIERHALS")
-            d3.select(".eierhals").style("display", "block")
+        if (eiercheck) {
+            svg.selectAll(".eierhals")
+                .transition()
+                .duration(1000)
+                .attr("display", "block")
+            
+        } else {
+            svg.selectAll(".eierhals")
+                .transition()
+                .duration(1000)
+                .attr("display", "none")
         }
-                
-        
-            svg.selectAll(".lakes")
-            .data(lakes)
-            .enter().append("path")
-            .attr("class", "lakes")
-            .attr("d", path)
-            .on("mouseover", eierhals)
-            .on("mouseleave", function(d){
-                d3.select(".eierhals").style("display", "none")
-                });
+        });
            
         
     //loading data for infile2
@@ -180,7 +190,10 @@ function ready (error, data, infile2, infile3, infile4) {
     d3.select("#BufferSlider").on("change", function(d){
         var buff = this.value
         d3.select("#svg")
-        svg.selectAll("circle").transition().duration(1000).attr("r", buff)
+        svg.selectAll("circle")
+            .transition()
+            .duration(200)
+            .attr("r", buff)
         });
     
     // enable/disable Wettermesstationen
@@ -188,10 +201,16 @@ function ready (error, data, infile2, infile3, infile4) {
         checked = d3.select("#CheckLayer1").property("checked")
         
         if (checked) {
-            svg.selectAll(".wetter").transition().duration(1000).attr("display", "block")
+            svg.selectAll(".wetter")
+                .transition()
+                .duration(1000)
+                .attr("display", "block")
             
         } else {
-            svg.selectAll(".wetter").transition().duration(1000).attr("display", "none")
+            svg.selectAll(".wetter")
+                .transition()
+                .duration(1000)
+                .attr("display", "none")
         }
         });
     
