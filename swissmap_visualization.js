@@ -110,14 +110,36 @@ function ready (error, data, infile2, infile3, infile4) {
             .enter().append("path")
             .attr("class", "lakes")
             .attr("d", path);
-        
+     
+    
+    
     // adding event listener for slider to allow for user defined visualization
+    var checked = d3.select("#CheckLayer1").property("checked")
     d3.select("#BufferSlider").on("change", function(d){
         var buff = this.value
         d3.select("#svg")
-        svg.selectAll("circle").attr("r", buff)
-        })
+        svg.selectAll("circle").transition().duration(1000).attr("r", buff)
+        });
+    
+    // enable/disable stuff
+    d3.select("#CheckLayer1").on("change",function(d){
+        checked = d3.select("#CheckLayer1").property("checked")
+        console.log(checked)
+        
+        if (checked) {
+            d3.select("#svg")
+            svg.selectAll("circle").transition().duration(1000).attr("display", "block")
             
+        } else {
+            d3.select("#svg")
+            svg.selectAll("circle").transition().duration(1000).attr("display", "none")
+        }
+        
+        
+        
+        });
+    
+    
     }
 
 
