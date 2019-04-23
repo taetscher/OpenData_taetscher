@@ -50,24 +50,31 @@ function ready (error, data, infile2, infile3, infile4) {
     var mouseover = function(d) {
         
         var cx = d3.mouse(this)[0]+10 
-        var cy = d3.mouse(this)[1] 
-        
-        
+        var cy = d3.mouse(this)[1]
         
         Tooltip
+            .style("border-color", d3.select(this).attr("fill"))
             .style("left", cx + "px")
             .style("top", cy + "px")
-            .html("<h6>" + d.properties.name + "</h6>" + "<br>")
+            
+        
+        if (d3.select(this).attr("class") == "wetter"){
+            console.log(d3.select(this).attr("class"))
+            Tooltip.html(d.properties.stn + "<br>")
+            
+        } else {
+            console.log(d3.select(this).attr("class"))
+            Tooltip.html(d.name + "<br>")
+            
+        }
+        
     }
+            
     var mousemove = function(d) {
-        
         Tooltip.style("opacity", 1)
-        
-        
-
     }
     var mouseleave = function(d) {
-      Tooltip.style("opacity", 0)
+        Tooltip.style("opacity", 0)
     }
         
     //loading data for infile1
@@ -100,7 +107,7 @@ function ready (error, data, infile2, infile3, infile4) {
             .data(flussMess)
             .enter().append("circle")
             .attr("class", "flussMess")
-            .attr("r", 3)
+            .attr("r", 5)
             .attr("fill-opacity", "0.7")
             .attr("fill", "blue")
             .on("mouseover", mouseover)
@@ -128,9 +135,9 @@ function ready (error, data, infile2, infile3, infile4) {
             .data(wetter)
             .enter().append("circle")
             .attr("class", "wetter")
-            .attr("r", 3)
+            .attr("r", 5)
             .attr("fill-opacity", "0.7")
-            .attr("fill", "white")
+            .attr("fill", "black")
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -184,6 +191,3 @@ function ready (error, data, infile2, infile3, infile4) {
     
     
     }
-
-
-
