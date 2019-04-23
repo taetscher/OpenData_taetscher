@@ -52,7 +52,7 @@ function ready (error, data, infile2, infile3, infile4) {
     }
     var mousemove = function(d) {
       Tooltip
-        .style("left", (d3.mouse(this)[0]) + "px")
+        .style("left", (d3.mouse(this)[0]+10) + "px")
         .style("top", (d3.mouse(this)[1]) + "px")
         console.log(d3.mouse(this) [0])
         console.log(d3.mouse(this) [1])
@@ -69,16 +69,17 @@ function ready (error, data, infile2, infile3, infile4) {
             .data(kantone)
             .enter().append("path")
             .attr("class", "kantone")
-            .attr("d", path)
+            .attr("d", path);
+    
+    // loading data for infile4
+    var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
+    console.log("swissLakes", lakes);
         
-            //add hover-over mechanic
-            //.on('mouseover', function(d){
-                //d3.select(this).classed("selected", true)
-            //})
-            //.on('mouseout', function(d){
-                //d3.select(this).classed("selected", false)
-            //})
-            ;
+            svg.selectAll(".lakes")
+            .data(lakes)
+            .enter().append("path")
+            .attr("class", "lakes")
+            .attr("d", path);
            
         
     //loading data for infile2
@@ -136,26 +137,16 @@ function ready (error, data, infile2, infile3, infile4) {
                 return coords[1];
             })
         
-    // loading data for infile4
-    var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
-    console.log("swissLakes", lakes);
-        
-            svg.selectAll(".lakes")
-            .data(lakes)
-            .enter().append("path")
-            .attr("class", "lakes")
-            .attr("d", path);
+    
      
     
     
     // adding event listener for slider to allow for user defined visualization
-    var checked = d3.select("#CheckLayer1").property("checked")
     d3.select("#BufferSlider").on("change", function(d){
         var buff = this.value
         d3.select("#svg")
         svg.selectAll("circle").transition().duration(1000).attr("r", buff)
         });
-    
     
     // enable/disable Wettermesstationen
     d3.select("#CheckLayer1").on("change",function(d){
