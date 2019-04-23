@@ -36,14 +36,16 @@ function ready (error, data, infile2, infile3, infile4) {
     
     // add Tooltip (Popup)
     var Tooltip = d3.select("#map")
-      .append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0)
-      .style("background-color", "white")
-      .style("border", "solid")
-      .style("border-width", "1px")
-      .style("border-radius", "1px")
-      .style("padding", "5px")
+        .append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "1px")
+        .style("padding", "5px")
+    
+    
 
     // Three function that change the tooltip when user hover / move / leave a cell
     var mouseover = function(d) {
@@ -88,12 +90,31 @@ function ready (error, data, infile2, infile3, infile4) {
     // loading data for infile4
     var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
     console.log("swissLakes", lakes);
+    
+    var eier = svg.selectAll("image").data([0]);
+        eier.enter()
+        .append("svg:image")
+        .attr("xlink:href", "data/eierhals/eierhals3.jpeg")
+        .attr("x", "300")
+        .attr("y", "100")
+        .attr("class", "eierhals")
+        .attr("display", "none")
+        
+        function eierhals(d){
+            console.log("EIERHALS")
+            d3.select(".eierhals").style("display", "block")
+        }
+                
         
             svg.selectAll(".lakes")
             .data(lakes)
             .enter().append("path")
             .attr("class", "lakes")
-            .attr("d", path);
+            .attr("d", path)
+            .on("mouseover", eierhals)
+            .on("mouseleave", function(d){
+                d3.select(".eierhals").style("display", "none")
+                });
            
         
     //loading data for infile2
