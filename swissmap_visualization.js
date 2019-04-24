@@ -7,7 +7,7 @@ var svg = d3.select("#map")
     
 // set layer imports        
 var infile1 = "data/kantone_topo.json";
-var infile2 = "data/flusstemperaturen.json";
+var infile2 = "data/flussdaten.json";
 var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
 var infile5 = "data/eierhals/hotel_eierhals.json";
@@ -68,7 +68,7 @@ function ready (error, data, infile2, infile3, infile4, infile5) {
             
         // if mouse hovers over flussMess, read in metadata from flussMess    
         } else {
-            Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + d.properties.param + "klasse: " + d.properties["temp-class"] + "<br>")
+            Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + "Wassertemperaturklasse: " + d.properties["temp-class"] + "<br>")
             
         }
         
@@ -109,7 +109,7 @@ function ready (error, data, infile2, infile3, infile4, infile5) {
     
     
     //loading data for infile2
-    var flussMess = topojson.feature(infile2, infile2.objects.flusstemperaturen).features;
+    var flussMess = topojson.feature(infile2, infile2.objects.flussdaten).features;
     console.log("flussMess", flussMess)
         
         
@@ -224,7 +224,7 @@ function ready (error, data, infile2, infile3, infile4, infile5) {
                 if (eiercheck){
                     svg.selectAll(".eierhals")
                         .attr("display", "block")
-                    console.log("Hotel Eierhals: http://www.hotel-eierhals.ch/")
+                        console.log("Hotel Eierhals: http://www.hotel-eierhals.ch/")
                         }
                 else {svg.selectAll(".eierhals")
                         .attr("display", "none")}
