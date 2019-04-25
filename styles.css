@@ -38,16 +38,14 @@ body {
     }
 
         .kantone{
-            fill: #CB904D;
             stroke: #333333;
-            stroke-width: 1;
+            stroke-width: 0.5;
         }
 
         .lakes{
-            fill: #C5E4F7;
+            fill: lightgray;
             stroke: #333333;
-            stroke-width: 1;
-
+            stroke-width: 0.5;
         }
 
         .selected{
