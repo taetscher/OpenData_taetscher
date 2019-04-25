@@ -12,6 +12,9 @@ var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
 var infile5 = "data/eierhals/hotel_eierhals.json";
 var infile6 = "data/badeindex_vectorized_topo.json";
+
+// set threshold for badewetter
+var thresh = 30
     
     
     
@@ -72,7 +75,14 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + "Wassertemperaturklasse: " + d.properties["temp-class"] + "<br>")
             
         } else {
-            Tooltip.html(d.properties)}
+            
+                var yesNo;
+                if(d.properties.DN > thresh){
+                    yesNo = "JA!"
+                } else {yesNo = "NEIN :-("}
+                Tooltip.html("<strong>Badeindex: </strong>" + d.properties.DN +"<br>" + "Würdest du hier baden?: " + yesNo)
+            
+                }
         
     }
             
