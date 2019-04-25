@@ -1,3 +1,4 @@
+//--------------------------- SETUP -----------------------------------
 // add svg element to body, make it scalable
 var svg = d3.select("#map")
     .append("svg")
@@ -15,9 +16,7 @@ var infile6 = "data/badeindex_vectorized_topo.json";
 
 // set threshold for badewetter
 var thresh = 30
-    
-    
-    
+     
 //read in files
 d3.queue()
     .defer(d3.json, infile1)
@@ -27,9 +26,7 @@ d3.queue()
     .defer(d3.json, infile5)
     .defer(d3.json, infile6)
     .await(ready);
-
-
-    
+ 
 // create projection and center it
 var projection = d3.geoMercator()
     //centering the map on screen (do not fuck with these values!)
@@ -38,6 +35,10 @@ var projection = d3.geoMercator()
     
 // create path (geoPath) using the projection
 var path = d3.geo.path().projection(projection);
+
+//--------------------------- SETUP -----------------------------------
+
+
 
 // load geometries, add to svg, add tooltip mechanic and slider bars etc.
 function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
@@ -89,6 +90,7 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
     var mousemove = function(d) {
         Tooltip.style("opacity", 1)
     }
+    
     var mouseleave = function(d) {
         Tooltip.style("opacity", 0)
     }
@@ -136,30 +138,22 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
     
-    
-    
+
     // loading data for infile4
     var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
-    //console.log("swissLakes", lakes);
-    
-    //Actually Appending lakes
+    //console.log("swissLakes", lakes)
     
             svg.selectAll(".lakes")
             .data(lakes)
             .enter().append("path")
             .attr("class", "lakes")
             .attr("d", path)
-    
-            
 
-    
-    
     
     //loading data for infile2
     var flussMess = topojson.feature(infile2, infile2.objects.flussdaten).features;
     //console.log("flussMess", flussMess)
-        
-        
+    
         svg.selectAll(".flussMess")
             .data(flussMess)
             .enter().append("circle")
@@ -212,7 +206,7 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
         
     
      
-    
+//------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
     
     // adding event listener for slider to allow for user defined visualization
     d3.select("#BufferSlider").on("change", function(d){
