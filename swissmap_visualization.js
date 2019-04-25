@@ -272,6 +272,8 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
                 svg.selectAll(".eierhals")
                     .attr("display", "block")
                     console.log("Hotel Eierhals: http://www.hotel-eierhals.ch/")
+                    console.log("codicolus & taetscher empfehlen Mungo: Jerry - In The Summertime")
+                    console.log("https://www.youtube.com/watch?v=wvUQcnfwUUM")
                     }
             else {svg.selectAll(".eierhals")
                     .attr("display", "none")}
