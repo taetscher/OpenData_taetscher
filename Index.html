@@ -56,8 +56,14 @@
                     
                     <form>
                         <div>
-                            <label for="BufferSlider">Bufferdistanz (Genauigkeit) festlegen</label>
-                            <input type="range" class="custom-range" min="2" max="20" step="0.5" value="5" id="BufferSlider">
+                            <label for="BufferSlider">(verschiedene Files einlesen) Räumliche Genauigkeit der Berechnung angeben</label>
+                            <input type="range" class="custom-range" min="0" max="2" step="1" value="0" id="BufferSlider">
+                        </div>
+                    </form>
+                    <form>
+                        <div>
+                            <label for="IndexSlider">Ab welcher Temperatur gehst du Baden?</label>
+                            <input type="range" class="custom-range" min="-10" max="35" step="1" value="20" id="IndexSlider">
                         </div>
                     </form>
                     <form>
@@ -110,7 +116,7 @@
             </div>
         
         </div>
-        <script src="swissmap_visualization.js"></script> 
+        <script src="visualization.js"></script> 
     </body>
     
 </html>

@@ -5,17 +5,25 @@ var svg = d3.select("#map")
     .attr("preserveAspectRatio", "xMinYMin meet")
     .attr("viewBox", "0 0 1000 600")
     .classed("map-content", true);
-    
+
+
 // set layer imports        
 var infile1 = "data/kantone_lines_topo.json";
 var infile2 = "data/flussdaten.json";
 var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
 var infile5 = "data/eierhals/hotel_eierhals.json";
-var infile6 = "data/badeindex_vectorized_topo.json";
+var infile6 = "data/badeindex_vectorized_topo.json"
+var infile7 = "data/hauptorte.json";
 
-// set threshold for badewetter
-var thresh = 30
+
+// set threshold for badeindex
+var thresh = 30;
+
+// set parameters for visualization
+var point_radius = 4;
+var color_fluss = "lightblue";
+var color_wetter = "grey";
      
 //read in files
 d3.queue()
@@ -25,7 +33,9 @@ d3.queue()
     .defer(d3.json, infile4)
     .defer(d3.json, infile5)
     .defer(d3.json, infile6)
+    .defer(d3.json, infile7)
     .await(ready);
+
  
 // create projection and center it
 var projection = d3.geoMercator()
@@ -41,7 +51,7 @@ var path = d3.geo.path().projection(projection);
 
 
 // load geometries, add to svg, add tooltip mechanic and slider bars etc.
-function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
+function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, infile7) {
     
     // add Tooltip (Popup)
     var Tooltip = d3.select("#map")
@@ -55,10 +65,10 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
         .style("padding", "5px")
     
     
-
-    // Three function that change the tooltip when user hover / move / leave a cell
+    // Three functions that change the tooltip when user hovers / moves / leaves a cell
     var mouseover = function(d) {
         
+        var featureClass = d3.select(this).attr("class");
         var cx = d3.mouse(this)[0]+10 
         var cy = d3.mouse(this)[1]
         
@@ -75,6 +85,10 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
         } else if (d3.select(this).attr("class")== "flussMess"){
             Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + "Wassertemperaturklasse: " + d.properties["temp-class"] + "<br>")
             
+        // if mouse hovers over hauptort
+        } else if (d3.select(this).attr("class")== "hauptorte"){
+            Tooltip.html("<strong>" + d.properties.ID1.substr(5) + "<strong>" )
+            
         } else {
             
                 var yesNo;
@@ -85,6 +99,12 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             
                 }
         
+        // Fill-Interaction
+        if(featureClass != "b_index_2"){
+        var color = d3.select(this).attr("stroke");
+        //console.log(color);
+        d3.select(this).attr("fill", color);
+        }
     }
             
     var mousemove = function(d) {
@@ -92,7 +112,18 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
     }
     
     var mouseleave = function(d) {
+        var featureClass = d3.select(this).attr("class");
         Tooltip.style("opacity", 0)
+        // Fill-Interaction
+        var color = d3.select(this).attr
+        if(featureClass == "flussMess"){
+            d3.select(this).style("fill", "lightblue");
+        } else if (featureClass == "wetter"){
+            d3.select(this).style("fill", "grey");
+        } else {
+            d3.select(this).style("fill", "black");
+        }
+        
     }
     
     //loading data for infile6
@@ -114,7 +145,7 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
     
     
     //loading data for infile1
-    var kantone = topojson.feature(data, data.objects.kantone_lines).features;
+    var kantone = topojson.feature(infile1, infile1.objects.kantone_lines).features;
         //console.log("kantone", kantone)
 
         svg.selectAll(".kantone")
@@ -150,6 +181,35 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             .attr("d", path)
 
     
+    //loading data for infile7
+    var hauptorte = topojson.feature(infile7, infile7.objects.hauptorte).features;
+    //console.log("flussMess", flussMess)
+    
+        svg.selectAll(".hauptorte")
+            .data(hauptorte)
+            .enter().append("circle")
+            .attr("class", "hauptorte")
+            .attr("r", point_radius+0.2)
+            .attr("fill-opacity", "1")
+            .attr("fill", "black")
+            .attr("stroke", "grey")
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave)
+            .attr("cx", function(d){
+                // get longitude from data (coordinates [long/lat])
+                var coords = projection(d.geometry.coordinates)
+                //console.log("long", coords)
+                return coords[0];
+            })
+        
+            .attr("cy",  function(d){
+                // get latitude from data
+                var coords = projection(d.geometry.coordinates)
+                //console.log("lat", coords)
+                return coords[1];
+            })
+    
     //loading data for infile2
     var flussMess = topojson.feature(infile2, infile2.objects.flussdaten).features;
     //console.log("flussMess", flussMess)
@@ -158,9 +218,10 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             .data(flussMess)
             .enter().append("circle")
             .attr("class", "flussMess")
-            .attr("r", 5)
+            .attr("r", point_radius)
             .attr("fill-opacity", "0.7")
-            .attr("fill", "blue")
+            .attr("fill", "lightblue")
+            .attr("stroke", "blue")
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -186,9 +247,10 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
             .data(wetter)
             .enter().append("circle")
             .attr("class", "wetter")
-            .attr("r", 5)
+            .attr("r", point_radius)
             .attr("fill-opacity", "0.7")
-            .attr("fill", "black")
+            .attr("fill", "grey")
+            .attr("stroke", "black")
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -203,51 +265,7 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
                 var coords = projection(d.geometry.coordinates)
                 return coords[1];
             })
-        
-    
-     
-//------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
-    
-    // adding event listener for slider to allow for user defined visualization
-    d3.select("#BufferSlider").on("change", function(d){
-        var buff = this.value
-        d3.select("#svg")
-        svg.selectAll("circle")
-            .transition()
-            .duration(200)
-            .attr("r", buff)
-        });
-    
-    // enable/disable Wettermesstationen
-    d3.select("#CheckLayer1").on("change",function(d){
-        checked = d3.select("#CheckLayer1").property("checked")
-        
-        if (checked) {
-            svg.selectAll(".wetter")
-                .transition()
-                .duration(1000)
-                .attr("display", "block")
             
-        } else {
-            svg.selectAll(".wetter")
-                .transition()
-                .duration(1000)
-                .attr("display", "none")
-        }
-        });
-    
-    // enable/disable Flusstemperaturmesstationen
-    d3.select("#CheckLayer2").on("change",function(d){
-        checked = d3.select("#CheckLayer2").property("checked")
-        
-        if (checked) {
-            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
-            
-        } else {
-            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
-        }
-        });
-    
     //loading data for infile5
     var hotel_eierhals = topojson.feature(infile5, infile5.objects.hotel_eierhals).features;
     //console.log("EIERHALS", hotel_eierhals)
@@ -313,3 +331,69 @@ function ready (error, data, infile2, infile3, infile4, infile5, infile6) {
         
     
     }
+
+
+//------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
+    
+    // adding event listener for slider to allow user to control spatial accuracy of Badeindex
+    d3.select("#BufferSlider").on("change", function(d){
+        var value = this.value;
+        var newFile;
+        console.log("Value BufferSlider:" + value)
+        
+        if (value == 0){var newFile = "data/badeindex_vectorized_topo.json";
+
+        } else if (value == 1){var newFile = "data/badeindex_vectorized_topo.json";
+
+        } else {var newFile = "data/badeindex_vectorized_topo.json";}
+            
+
+        
+        d3.json(newFile, function(d){
+            var newData = topojson.feature(d, d.objects.badeindex_vectorized).features;
+            console.log(newData)
+            
+            });
+        
+        
+        });
+    
+
+
+    // adding event listener for slider to allow for user defined calculation of Badeindex
+    d3.select("#IndexSlider").on("change", function(d){
+        var value = this.value;
+        console.log(value)
+        });
+    
+    
+    
+    // enable/disable Wettermesstationen
+    d3.select("#CheckLayer1").on("change",function(d){
+        checked = d3.select("#CheckLayer1").property("checked")
+        
+        if (checked) {
+            svg.selectAll(".wetter")
+                .transition()
+                .duration(1000)
+                .attr("display", "block")
+            
+        } else {
+            svg.selectAll(".wetter")
+                .transition()
+                .duration(1000)
+                .attr("display", "none")
+        }
+        });
+    
+    // enable/disable Flusstemperaturmesstationen
+    d3.select("#CheckLayer2").on("change",function(d){
+        checked = d3.select("#CheckLayer2").property("checked")
+        
+        if (checked) {
+            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
+            
+        } else {
+            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
+        }
+        });
