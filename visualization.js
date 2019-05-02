@@ -6,6 +6,16 @@ var svg = d3.select("#map")
     .attr("viewBox", "0 0 1000 600")
     .classed("map-content", true);
 
+// set up grouping
+var gIndex = svg.append("g");
+var gKantone = svg.append("g");
+var gIndex2 = svg.append("g");
+var gLakes = svg.append("g");
+var gHauptorte = svg.append("g");
+var gflussMess = svg.append("g");
+var gWetter = svg.append("g");
+var gEierhals = svg.append("g");
+
 
 // set layer imports        
 var infile1 = "data/kantone_lines_topo.json";
@@ -13,7 +23,7 @@ var infile2 = "data/flussdaten.json";
 var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
 var infile5 = "data/eierhals/hotel_eierhals.json";
-var infile6 = "data/badeindex_vectorized_topo.json"
+var infile6 = "data/GIS/badeindex_vect32.json";
 var infile7 = "data/hauptorte.json";
 
 
@@ -48,12 +58,7 @@ var path = d3.geo.path().projection(projection);
 
 //--------------------------- SETUP -----------------------------------
 
-
-
-// load geometries, add to svg, add tooltip mechanic and slider bars etc.
-function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, infile7) {
-    
-    // add Tooltip (Popup)
+// add Tooltip (Popup)
     var Tooltip = d3.select("#map")
         .append("div")
         .attr("class", "tooltip")
@@ -69,8 +74,8 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     var mouseover = function(d) {
         
         var featureClass = d3.select(this).attr("class");
-        var cx = d3.mouse(this)[0]+10 
-        var cy = d3.mouse(this)[1]
+        var cx = d3.event.pageX + 10
+        var cy = d3.event.pageY - 39
         
         Tooltip
             .style("border-color", d3.select(this).attr("fill"))
@@ -125,15 +130,23 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
         }
         
     }
+
+
+
+// load geometries, add to svg, add tooltip mechanic and slider bars etc.
+function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, infile7) {
+    
+    
     
     //loading data for infile6
-    var b_index = topojson.feature(infile6, infile6.objects.badeindex_vectorized).features;
+    var b_index = topojson.feature(infile6, infile6.objects.badeindex_vect32).features;
 
-        svg.selectAll(".b_index")
+        gIndex.selectAll(".b_index")
             .data(b_index)
             .enter().append("path")
             .attr("class", "b_index")
             .attr("border-style", "solid")
+            .attr("z-index", 1)
             .attr("fill", function(d,i){
                 var DN = b_index[i].properties.DN;
                 var DN2 = DN/100;
@@ -148,23 +161,25 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     var kantone = topojson.feature(infile1, infile1.objects.kantone_lines).features;
         //console.log("kantone", kantone)
 
-        svg.selectAll(".kantone")
+        gKantone.selectAll(".kantone")
             .data(kantone)
             .enter().append("path")
             .attr("class", "kantone")
             .attr("fill", "white")
             .attr("fill-opacity", "0")
-            .attr("d", path);
+            .attr("d", path)
+            .attr("z-index", 100);
     
     //loading data for infile6
-    var b_index_2 = topojson.feature(infile6, infile6.objects.badeindex_vectorized).features;
+    var b_index_2 = topojson.feature(infile6, infile6.objects.badeindex_vect32).features;
 
-        svg.selectAll(".b_index_2")
+        gIndex2.selectAll(".b_index_2")
             .data(b_index)
             .enter().append("path")
             .attr("class", "b_index_2")
             .attr("fill-opacity", "0")
             .attr("d", path)
+            .attr("z-index", 2)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
@@ -174,18 +189,19 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
     //console.log("swissLakes", lakes)
     
-            svg.selectAll(".lakes")
+            gLakes.selectAll(".lakes")
             .data(lakes)
             .enter().append("path")
             .attr("class", "lakes")
             .attr("d", path)
+            .attr("z-index", 101);
 
     
     //loading data for infile7
     var hauptorte = topojson.feature(infile7, infile7.objects.hauptorte).features;
     //console.log("flussMess", flussMess)
     
-        svg.selectAll(".hauptorte")
+        gHauptorte.selectAll(".hauptorte")
             .data(hauptorte)
             .enter().append("circle")
             .attr("class", "hauptorte")
@@ -193,6 +209,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "1")
             .attr("fill", "black")
             .attr("stroke", "grey")
+            .attr("z-index", 102)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -214,7 +231,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     var flussMess = topojson.feature(infile2, infile2.objects.flussdaten).features;
     //console.log("flussMess", flussMess)
     
-        svg.selectAll(".flussMess")
+        gflussMess.selectAll(".flussMess")
             .data(flussMess)
             .enter().append("circle")
             .attr("class", "flussMess")
@@ -222,6 +239,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "0.7")
             .attr("fill", "lightblue")
             .attr("stroke", "blue")
+            .attr("z-index", 103)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -243,7 +261,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     var wetter = topojson.feature(infile3, infile3.objects.weatherstation).features;
     //console.log("wetter", wetter)
         
-            svg.selectAll(".wetter")
+            gWetter.selectAll(".wetter")
             .data(wetter)
             .enter().append("circle")
             .attr("class", "wetter")
@@ -251,6 +269,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "0.7")
             .attr("fill", "grey")
             .attr("stroke", "black")
+            .attr("z-index", 104)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -271,11 +290,12 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
     //console.log("EIERHALS", hotel_eierhals)
         
         
-    svg.selectAll(".hotel_eierhals")
+    gEierhals.selectAll(".hotel_eierhals")
         .data(hotel_eierhals)
         .enter().append("circle")
         .attr("class", "hotel_eierhals")
         .attr("r", 4)
+        .attr("z-index", 105)
         .attr("fill-opacity", "0.0000001")
 
         // Move this part to the layer that should be affected by eierhals shenanigans
@@ -335,65 +355,115 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
 
 //------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
     
-    // adding event listener for slider to allow user to control spatial accuracy of Badeindex
-    d3.select("#BufferSlider").on("change", function(d){
-        var value = this.value;
-        var newFile;
-        console.log("Value BufferSlider:" + value)
+function updateRender(newFile){
+    d3.json(newFile, function(d){
         
-        if (value == 0){var newFile = "data/badeindex_vectorized_topo.json";
-
-        } else if (value == 1){var newFile = "data/badeindex_vectorized_topo.json";
-
-        } else {var newFile = "data/badeindex_vectorized_topo.json";}
-            
-
+    var getIt = newFile.substr(9,16);
         
-        d3.json(newFile, function(d){
-            var newData = topojson.feature(d, d.objects.badeindex_vectorized).features;
-            console.log(newData)
-            
-            });
+    var newData = topojson.feature(d, d.objects[getIt]).features;
         
+        // Read in new Data (Background)
+        gIndex.selectAll(".b_index")
+            .data(newData)
+            .enter()
+            .append("path")
+            .attr("class", "b_index");
         
+        // update new Data
+        gIndex.selectAll(".b_index")
+            .data(newData)
+            .attr("d", path)
+            .attr("fill", function(d,i){
+                var DN = newData[i].properties.DN;
+                var DN2 = DN/100;
+                var DN3 = 1-DN2;
+                return d3.interpolateRdYlBu(DN3)
         });
-    
-
-
-    // adding event listener for slider to allow for user defined calculation of Badeindex
-    d3.select("#IndexSlider").on("change", function(d){
-        var value = this.value;
-        console.log(value)
-        });
-    
-    
-    
-    // enable/disable Wettermesstationen
-    d3.select("#CheckLayer1").on("change",function(d){
-        checked = d3.select("#CheckLayer1").property("checked")
         
-        if (checked) {
-            svg.selectAll(".wetter")
-                .transition()
-                .duration(1000)
-                .attr("display", "block")
-            
-        } else {
-            svg.selectAll(".wetter")
-                .transition()
-                .duration(1000)
-                .attr("display", "none")
-        }
-        });
-    
-    // enable/disable Flusstemperaturmesstationen
-    d3.select("#CheckLayer2").on("change",function(d){
-        checked = d3.select("#CheckLayer2").property("checked")
+        // update/exit new Data
+        gIndex.selectAll(".b_index")
+            .data(newData)
+            .exit()
+            .remove();
         
-        if (checked) {
-            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
+        
+        
+        
+        // same procedure as every year (foreground)
+        gIndex2.selectAll(".b_index_2")
+            .data(newData)
+            .enter()
+            .append("path")
+            .attr("class", "b_index_2")
+            .attr("fill-opacity", "0")
+            .attr("d", path)
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);;
+        
+        gIndex2.selectAll(".b_index_2")
+            .data(newData)
+            .enter().append("path")
+            .attr("class", "b_index_2")
             
-        } else {
-            svg.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
-        }
+        
+        gIndex2.selectAll(".b_index_2")
+            .data(newData)
+            .exit()
+            .remove();
+        
+
         });
+};   
+
+// adding event listener for slider to allow user to control spatial accuracy of Badeindex
+d3.select("#BufferSlider").on("change", function(d){
+    var value = this.value;
+    var newFile;
+    console.log("Value BufferSlider:" + value);
+
+    if (value == 0){var newFile = "data/GIS/badeindex_vect32.json";
+
+    } else if (value == 1){var newFile = "data/GIS/badeindex_vect44.json";
+
+    } else {var newFile = "data/GIS/badeindex_vect55.json";}
+
+    updateRender(newFile);
+
+    });
+
+// adding event listener for slider to allow for user defined calculation of Badeindex
+d3.select("#IndexSlider").on("change", function(d){
+    var value = this.value;
+    console.log(value)
+})    
+
+// enable/disable Wettermesstationen
+d3.select("#CheckLayer1").on("change",function(d){
+    checked = d3.select("#CheckLayer1").property("checked")
+
+    if (checked) {
+        gWetter.selectAll(".wetter")
+            .transition()
+            .duration(1000)
+            .attr("display", "block")
+
+    } else {
+        gWetter.selectAll(".wetter")
+            .transition()
+            .duration(1000)
+            .attr("display", "none")
+    }
+    });
+
+// enable/disable Flusstemperaturmesstationen
+d3.select("#CheckLayer2").on("change",function(d){
+    checked = d3.select("#CheckLayer2").property("checked")
+
+    if (checked) {
+        gflussMess.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
+
+    } else {
+        gflussMess.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
+    }
+    });
