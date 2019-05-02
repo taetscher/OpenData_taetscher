@@ -93,8 +93,8 @@ var path = d3.geo.path().projection(projection);
             
                 var yesNo;
                 if(d.properties.DN > thresh){
-                    yesNo = "JA!"
-                } else {yesNo = "NEIN :-("}
+                    yesNo = "Ja! " + "<br>" + "&#x2714;" + "&#x1F601;" + "&#x1F44D;"
+                } else {yesNo = "Nein! " + "<br>" + "&#x274C;" + "&#x1F612;" + "&#x1F44E;"}
                 Tooltip.html("<strong>Badeindex: </strong>" + d.properties.DN +"<br>" + "Würdest du hier baden?: " + yesNo)
             
                 }
