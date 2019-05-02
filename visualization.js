@@ -6,7 +6,7 @@ var svg = d3.select("#map")
     .attr("viewBox", "0 0 1000 600")
     .classed("map-content", true);
 
-// set up grouping
+// set up grouping to avoid d3 mess-ups when drawing layers
 var gIndex = svg.append("g");
 var gKantone = svg.append("g");
 var gIndex2 = svg.append("g");
@@ -16,16 +16,13 @@ var gflussMess = svg.append("g");
 var gWetter = svg.append("g");
 var gEierhals = svg.append("g");
 
-
 // set layer imports        
 var infile1 = "data/kantone_lines_topo.json";
 var infile2 = "data/flussdaten.json";
 var infile3 = "data/weatherstations.json";
 var infile4 = "data/swissLakes_topo.json";
-var infile5 = "data/eierhals/hotel_eierhals.json";
-var infile6 = "data/GIS/badeindex_vect32.json";
-var infile7 = "data/hauptorte.json";
-
+var infile5 = "data/GIS/badeindex_vect32.json";
+var infile6 = "data/hauptorte.json";
 
 // set threshold for badeindex
 var thresh = 30;
@@ -43,7 +40,6 @@ d3.queue()
     .defer(d3.json, infile4)
     .defer(d3.json, infile5)
     .defer(d3.json, infile6)
-    .defer(d3.json, infile7)
     .await(ready);
 
  
@@ -56,7 +52,7 @@ var projection = d3.geoMercator()
 // create path (geoPath) using the projection
 var path = d3.geo.path().projection(projection);
 
-//--------------------------- SETUP -----------------------------------
+//--------------------------- END SETUP -----------------------------------
 
 // add Tooltip (Popup)
     var Tooltip = d3.select("#map")
@@ -67,8 +63,7 @@ var path = d3.geo.path().projection(projection);
         .style("border", "solid")
         .style("border-width", "1px")
         .style("border-radius", "1px")
-        .style("padding", "5px")
-    
+        .style("padding", "5px");
     
     // Three functions that change the tooltip when user hovers / moves / leaves a cell
     var mouseover = function(d) {
@@ -107,7 +102,6 @@ var path = d3.geo.path().projection(projection);
         // Fill-Interaction
         if(featureClass != "b_index_2"){
         var color = d3.select(this).attr("stroke");
-        //console.log(color);
         d3.select(this).attr("fill", color);
         }
     }
@@ -134,19 +128,18 @@ var path = d3.geo.path().projection(projection);
 
 
 // load geometries, add to svg, add tooltip mechanic and slider bars etc.
-function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, infile7) {
+function ready (error, infile1, infile2, infile3, infile4, infile5, infile6) {
     
     
     
     //loading data for infile6
-    var b_index = topojson.feature(infile6, infile6.objects.badeindex_vect32).features;
+    var b_index = topojson.feature(infile5, infile5.objects.badeindex_vect32).features;
 
         gIndex.selectAll(".b_index")
             .data(b_index)
             .enter().append("path")
             .attr("class", "b_index")
             .attr("border-style", "solid")
-            .attr("z-index", 1)
             .attr("fill", function(d,i){
                 var DN = b_index[i].properties.DN;
                 var DN2 = DN/100;
@@ -167,11 +160,10 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("class", "kantone")
             .attr("fill", "white")
             .attr("fill-opacity", "0")
-            .attr("d", path)
-            .attr("z-index", 100);
+            .attr("d", path);
     
     //loading data for infile6
-    var b_index_2 = topojson.feature(infile6, infile6.objects.badeindex_vect32).features;
+    var b_index_2 = topojson.feature(infile5, infile5.objects.badeindex_vect32).features;
 
         gIndex2.selectAll(".b_index_2")
             .data(b_index)
@@ -179,7 +171,6 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("class", "b_index_2")
             .attr("fill-opacity", "0")
             .attr("d", path)
-            .attr("z-index", 2)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
@@ -193,12 +184,11 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .data(lakes)
             .enter().append("path")
             .attr("class", "lakes")
-            .attr("d", path)
-            .attr("z-index", 101);
+            .attr("d", path);
 
     
     //loading data for infile7
-    var hauptorte = topojson.feature(infile7, infile7.objects.hauptorte).features;
+    var hauptorte = topojson.feature(infile6, infile6.objects.hauptorte).features;
     //console.log("flussMess", flussMess)
     
         gHauptorte.selectAll(".hauptorte")
@@ -209,7 +199,6 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "1")
             .attr("fill", "black")
             .attr("stroke", "grey")
-            .attr("z-index", 102)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -239,7 +228,6 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "0.7")
             .attr("fill", "lightblue")
             .attr("stroke", "blue")
-            .attr("z-index", 103)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -269,7 +257,6 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
             .attr("fill-opacity", "0.7")
             .attr("fill", "grey")
             .attr("stroke", "black")
-            .attr("z-index", 104)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave)
@@ -285,73 +272,7 @@ function ready (error, infile1, infile2, infile3, infile4, infile5, infile6, inf
                 return coords[1];
             })
             
-    //loading data for infile5
-    var hotel_eierhals = topojson.feature(infile5, infile5.objects.hotel_eierhals).features;
-    //console.log("EIERHALS", hotel_eierhals)
-        
-        
-    gEierhals.selectAll(".hotel_eierhals")
-        .data(hotel_eierhals)
-        .enter().append("circle")
-        .attr("class", "hotel_eierhals")
-        .attr("r", 4)
-        .attr("z-index", 105)
-        .attr("fill-opacity", "0.0000001")
-
-        // Move this part to the layer that should be affected by eierhals shenanigans
-        .on("mouseover", function(d){
-            if (eiercheck){
-                svg.selectAll(".eierhals")
-                    .attr("display", "block")
-                    console.log("Hotel Eierhals: http://www.hotel-eierhals.ch/")
-                    console.log("codicolus & taetscher empfehlen Mungo: Jerry - In The Summertime")
-                    console.log("https://www.youtube.com/watch?v=wvUQcnfwUUM")
-                    }
-            else {svg.selectAll(".eierhals")
-                    .attr("display", "none")}
-        })
-        .on("mousemove", function(d){
-                svg.selectAll(".eierhals")
-        })
-        .on("mouseleave", function(d){
-                    svg.selectAll(".eierhals")
-                    .attr("display", "none")})
-        //----------------------------------------------------------------------------
-
-        .attr("cx", function(d){
-            // get longitude from data (coordinates [long/lat])
-            var coords = projection(d.geometry.coordinates)
-            //console.log("long", coords)
-            return coords[0];
-        })
-
-        .attr("cy",  function(d){
-            // get latitude from data
-            var coords = projection(d.geometry.coordinates)
-            //console.log("lat", coords)
-            return coords[1];
-        })
-    
-    //Eiercheck
-    var eiercheck = d3.select("#Eiercheck").property("checked")
-    var eier = svg.selectAll("image").data([0]);
-        eier.enter()
-        .append("svg:image")
-        .attr("xlink:href", "data/eierhals/eierhals3.jpeg")
-        .attr("x", "300")
-        .attr("y", "100")
-        .attr("class", "eierhals")
-        .attr("display", "none")
-                     
-    d3.select("#Eiercheck").on("change",function(d){
-        eiercheck = d3.select("#Eiercheck").property("checked")
-        console.log("Eiercheckd ", eiercheck)
-        });
-           
-        
-    
-    }
-
+}
 
 //------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
     
@@ -385,8 +306,6 @@ function updateRender(newFile){
             .data(newData)
             .exit()
             .remove();
-        
-        
         
         
         // same procedure as every year (foreground)
