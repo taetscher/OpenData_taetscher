@@ -1,1 +1,0 @@
-{"type":"Topology","arcs":[],"objects":{"hotel_eierhals":{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[8.636729951593043,47.119876759785555],"properties":{"id":0,"hotels":"hotel_eierhals"}}]}},"crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}}}
