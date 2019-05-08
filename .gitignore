@@ -10,3 +10,5 @@ data/GIS/badeindex_vect32\.geojson
 data/GIS/badeindex_vect44\.geojson
 
 data/GIS/badeindex_vect55\.geojson
+
+*.zip
