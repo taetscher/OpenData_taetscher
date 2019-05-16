@@ -57,16 +57,26 @@ body {
         border-left-width: thin;
     }
 
+input[type=range]::-webkit-slider-runnable-track {
+    width: 80%;
+    height: 1px;
+    cursor: pointer;
+    background: #010101;
+
+}
+
 input[type=range]::-webkit-slider-thumb {
-  height: 50px;
-  width: 50px;
-  border-radius: 3px;
-  background-color: transparent;
-  background: url(data/styling/icons/zirkel.svg) center center no-repeat;
-background-size: 26px 26px;
-  cursor: pointer;
-  -webkit-appearance: none;
-  margin-top: -23px;
+    height: 50px;
+    width: 27px;
+    border-radius: 0px;
+    background-color: #000000;
+    border: 1px;
+    border-color: aqua;
+    background: url(data/styling/icons/zirkel.svg) center center no-repeat;
+    background-size: 25px 25px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -27px;
 }
 
 
