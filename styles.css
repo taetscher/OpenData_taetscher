@@ -1,0 +1,89 @@
+body {
+    background: white;
+}
+
+    h1 {
+        color: black;
+        text-align: center;
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    h2 {
+        color: darkslategray;
+        text-align: center;
+        margin: 0;
+        font-family: 'Open Sans', sans-serif;
+    }
+
+    h3 {
+        color: deeppink;
+                text-align: center;
+                margin: 0;
+                font-family: 'Open Sans', sans-serif;
+    }
+
+    p {
+        font-family: 'Open Sans', sans-serif;
+    }
+
+
+
+#section1 {
+
+}
+
+    #map {
+        
+    }
+
+        .kantone{
+            stroke: #333333;
+            stroke-width: 0.5;
+        }
+
+        .lakes{
+            fill: lightgray;
+            stroke: #333333;
+            stroke-width: 0.5;
+        }
+
+        .selected{
+            fill: yellow;
+        }
+
+    #sidebar {
+        border-left-style: solid;
+        border-left-width: thin;
+    }
+
+input[type=range]::-webkit-slider-thumb {
+  height: 50px;
+  width: 50px;
+  border-radius: 3px;
+  background-color: transparent;
+  background: url(data/styling/icons/zirkel.svg) center center no-repeat;
+background-size: 26px 26px;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -23px;
+}
+
+
+
+#section2 {
+    
+}
+
+    #metadata {
+        
+    }
+
+    #authors {
+        
+    }
+
+#section3 {
+    background-color: khaki;
+    
+}
