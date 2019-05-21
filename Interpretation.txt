@@ -1,0 +1,97 @@
+Bedienungshilfe
+
+Diese Website enthält einige Interaktive Features:
+
+- Die angezeigten Kartenlayer können per Checkbox ein- und ausgeschaltet werden
+- Die Berechnung des Badeindex kann on-the-fly verändert werden, was individuellen Ansprüchen für Badewetter etwas besser gerecht werden soll.
+- Die räumliche Auflösung der Interpolation des Badeindex lässt sich per Schieberegler verändern (3 vorprogrammierte Stufen)
+- Die Inhalte der Karte lassen sich per Hover-Over mit der Maus detailliert erklärt anzeigen.
+
+
+
+
+Was kann der Badeindex ((noch) nicht)?
+
+Mit dem Badeindex werden verschiedene Messdaten von SwissMeteo und vom BAFU verrechnet, um einen Indikator 
+für die räumliche Ausprägung optimaler Badebedingungen abzuschätzen. 
+Die einzelnen Messungen (wie beispielsweise Lufttemperatur, Niederschlag der letzten 10 Minuten, Windstärke, Wassertemperatur...) werden
+anschliessend als gewichtete Summe zum Badeindex verrechnet. Die Gewichtung der einzelnen Elemente erfolgte im Ermessen der Autoren.
+Der primäre Anspruch des Badeindex liegt darin, zu zeigen, dass openData Datenquellen ungenutztes Potential aufweisen.
+Da entscheidende Einflussfaktoren für die Genauigkeit des Badeindex wie beispielsweise Topographie nicht in die
+Berechnung einfliessen, ergeben sich Fehler im hier dargestellten Produkt.
+
+
+
+
+
+
+Über die Berechnung des Badeindex
+
+Datengrundlagen:
+Als Datengrundlagen dienen Wettermessdaten von SwissMeteo (LINK) sowie Wassertemperaturmessungen vom BAFU (LINK).
+Für die Visualisierung werden Geodaten von (LINK) verwendet.
+Alle Datenquellen sind offen zugänglich (seiehe dazu auch "Erkenntnisse aus der Verarbeitung von Open Data").
+
+Datenverarbeitung:
+Für die Datenaquirierung verwenden wir ein R-Skript, welches aktuelle Wetter- und Wasssermessdaten von den zuvor erwähnten Websites herunterlädt.
+Anschliessend berechnet das Skript daraus direkt den Badeindex. Dessen Berechnung geschieht nach folgender Formel:
+(FORMEL EINFUEGEN).
+Mit den Messdaten werden ebenfalls Koordinaten geliefert, die aufzeigen wo die Messung stattgefunden hat.
+Anhand der Koordinaten wird in der OpenSource Software QGIS mithilfe eines Inverse Distance Weighting Algorithmus
+aus den Punktdaten eine Fläche interpoliert. Diese wird anschliessend in Polygone umgewandelt und als topojson File ausgegeben.
+
+
+
+
+
+Erkenntnisse aus der Verarbeitung von Open Data
+
+Open Data umfassen grundsätzlich nicht Peersonen-bezogene und nicht Sicherheits-relevante Daten. 
+Des weiteren müssen sie die Prinzipien von Open Data erfüllen (VERWEIS).
+Anhand der folgenen Auflistung lässt sich zeigen, wie gut die hier verwendeten Datenquellen diese Anforderungen erfüllen:
+
+- Vollständigkeit
+(Alle öffentlichen Daten werden verfügbar gemacht)
+Die verwendeten Wassermessungen zeigen ausschliesslich Messtemperaturen von Fliessgewässern an.
+Um Wassertemperaturen von stehenden Gewässern zu erlangen, müsste Webscraping betrieben werden.
+
+- Primärquelle
+(Die Daten werden an ihrem Ursprung gesammelt)
+Erfüllt.
+
+- Zeitnah
+(Daten werden umgehend zur Verfügung gestellt)
+Dieses Kriterium wird von den Wettermessdaten von SwissMeteo erfüllt.
+
+- Zugänglichkeit
+(Daten werden allen für möglichst viele Verwendungszwecke bereit gestellt)
+
+- Maschinenlesbarkeit
+(Daten sind in einem offenen, strukturierten Format gespeichert)
+Erfüllt.
+
+- Nicht diskriminierend
+(Daten sind allen ohne Registrierung verfügbar)
+Erfüllt.
+
+- Nicht Proprietär
+(Zur Dateninterpretation wird keine proprietäre Software benötigt)
+Erfüllt.
+
+- Freie Lizenz
+(Daten stehen unter einer freien Lizenz)
+
+- Permanent Verfügbar
+(Datenbestände sind permanent online und versioniert verfügbar)
+
+- Kostenlos
+(Der Zugriff auf die Daten ist kostenlos)
+Für alle hier visualisierten Daten ist dieses Kriterum erfüllt.
+Um das Gewässernetzwerk der Schweiz ansprechend darzustellen, bedarf es jedoch einem Datensatz mit Flüssen.
+Dieser ist vom BAFU nur gegen Bezahlung erhältlich (LINK).
+
+
+
+Schlussfolgerungen
+
+- Ungenutztes Potential durch Zugangsbeschränkugen der Datensätze (-> bezahlen, messdaten für stehende gewässer). Sind diese Daten Sicherheitsrelevant oder Personenbezogen?
