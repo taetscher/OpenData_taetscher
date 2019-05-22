@@ -1,2 +1,2 @@
-# OpenData19
-Repository fuer die OpenData Uebungen 2019
+# OpenData_codicolus
+This is the repo for the OpenData Lecture 2019

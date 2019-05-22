@@ -1,388 +1,785 @@
-//--------------------------- SETUP -----------------------------------
-// add svg element to body, make it scalable
-var svg = d3.select("#map")
-    .append("svg")
-    .attr("preserveAspectRatio", "xMinYMin meet")
-    .attr("viewBox", "0 0 1000 600")
-    .classed("map-content", true);
+/* ---------------------- Settings ------------------------ */
+// Set up canvas and Layer-Groups
+var canvas = d3.select("#map")
+                .append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 1000 650");
 
-// set up grouping to avoid d3 mess-ups when drawing layers
-var gIndex = svg.append("g");
-var gKantone = svg.append("g");
-var gIndex2 = svg.append("g");
-var gLakes = svg.append("g");
-var gHauptorte = svg.append("g");
-var gflussMess = svg.append("g");
-var gWetter = svg.append("g");
-var gEierhals = svg.append("g");
+// Layer grouping
+var gIndex11 = canvas.append("g")
+    .attr("id", "res11");
+var gIndex12 = canvas.append("g")
+    .attr("id", "res12")
+    .attr("display", "none");
+var gIndex13 = canvas.append("g")
+    .attr("id", "res13")
+    .attr("display", "none");
+var gKantone = canvas.append("g");
+var gLakes = canvas.append("g");
+var gIndex21 = canvas.append("g")
+    .attr("id", "res21");
+var gIndex22 = canvas.append("g")
+    .attr("id", "res22")
+    .attr("display", "none");
+var gIndex23 = canvas.append("g")
+    .attr("id", "res23")
+    .attr("display", "none");
+var gHauptorte = canvas.append("g");
+var gRiver = canvas.append("g");
+var gWeather = canvas.append("g");
 
-// set layer imports        
-var infile1 = "data/kantone_lines_topo.json";
-var infile2 = "data/flussdaten.json";
-var infile3 = "data/weatherstations.json";
-var infile4 = "data/swissLakes_topo.json";
-var infile5 = "data/GIS/badeindex_vect32.json";
-var infile6 = "data/hauptorte.json";
+// Point-Settings
+var radius = 4;
+var strkwdt = 1;
 
-// set threshold for badeindex
-var thresh = 30;
+// File-Paths
+var kantone = "data/kantone_lines.geojson";
+var lakes = "data/swissLakes.json";
+var hauptorte = "data/hauptorte.geojson";
+var riverdata = "data/flussdaten.geojson";
+var weatherdata = "data/weatherstation.geojson";
+var index_res1 = "data/badeindex_vect32.json";
+var index_res2 = "data/badeindex_vect44.json";
+var index_res3 = "data/badeindex_vect55.json";
 
-// set parameters for visualization
-var point_radius = 4;
-var color_fluss = "lightblue";
-var color_wetter = "grey";
-     
-//read in files
-d3.queue()
-    .defer(d3.json, infile1)
-    .defer(d3.json, infile2)
-    .defer(d3.json, infile3)
-    .defer(d3.json, infile4)
-    .defer(d3.json, infile5)
-    .defer(d3.json, infile6)
-    .await(ready);
+//Index-List
+let indizes = ["index21", "index22", "index23"]
 
- 
-// create projection and center it
+// Temperatur-Index Threshold
+//var threshold = 30
+var threshold = 68;
+
+// Define Projection and Path
 var projection = d3.geoMercator()
-    //centering the map on screen (do not fuck with these values!)
-    .translate([-940, 9555])
-    .scale(10000);
-    
-// create path (geoPath) using the projection
+        .scale(10000)
+        .translate([-940,9555]);
+                
 var path = d3.geo.path().projection(projection);
 
-//--------------------------- END SETUP -----------------------------------
 
-// add Tooltip (Popup)
-    var Tooltip = d3.select("#map")
-        .append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0)
-        .style("background-color", "white")
-        .style("border", "solid")
-        .style("border-width", "1px")
-        .style("border-radius", "1px")
-        .style("padding", "5px");
+// ------------------------ Dynamic Index Calculation------------------
+// Contributions of individual parameters
+// Temperature
+var tempCont = function(value, wgt, max){
+    if(value < 0){
+        value = 0;
+    }
     
-    // Three functions that change the tooltip when user hovers / moves / leaves a cell
-    var mouseover = function(d) {
+    var std = 1 / max * value;
+    
+    console.log(std * wgt);
+    
+    return std * wgt;
+}
+// Precipitation
+var precCont = function(value, wgt){
+    if(value > 0){
+        return 0;
+    }
+    console.log(wgt);
+    return wgt;
+}
+// Sunshine
+var sunCont = function(value, wgt, max){
+    var std = 1 / max * value;
+    
+    console.log(std*wgt);
+    
+    return std * wgt;
+}
+// Global Radiation
+var globCont = function(value, wgt, max){
+    
+    var std = 1 / max * value;
+    
+    console.log(std*wgt);
+    
+    return std * wgt;
+}
+// Relative Humidity
+var feuCont = function(value, wgt){
+    var max = 100;
+    
+    var std = 1 / max * value;
+    
+    if(value > 90){
+        wgt = wgt * 0.5;
+    }
+    
+    console.log(std*wgt);
+    
+    return std * wgt;
+}
+// Wind
+var windCont = function(value, wgt, max){
+    if(value > max){
+        value = max;
+    }
+    
+    var std = 1 / max * value;
+    
+    console.log((1-std)*wgt);
+    
+    return ((1-std)*wgt);
+}
+
+// Slider für Temperatureingabe
+function updateIndexThreshold(temperatur){
+    var index = tempCont(temperatur, 0.4, 45) + precCont(0, 0.2) +
+                sunCont(5, 0.05, 10) + globCont(500, 0.05, 1000) +
+                feuCont(70, 0.15) + windCont(0, 0.15, 25);
+    
+    //var index = Math.ceil(0.4 * temperatur + 22);
+    
+    threshold = Math.floor(100*index);
+    //threshold = Math.floor(index);
+    
+    
+    
+    console.log("Hallo");
+    console.log(threshold);
+}
+
+// Event-Listener Slider für Temperatureingabe
+d3.select("input#parameter").on("change", function(d){
+    var temperatur = this.value;
+    //Update label
+    document.getElementById("lbparam").innerHTML = "Wert: " + temperatur + " °C";
+    
+    // Call Threshold-Update Function
+    updateIndexThreshold(temperatur);
+})
+/* ------------------------- Functionalities --------------- */
+// Converts temperature class in temperature-range
+var convertTempClass = function(tclass) {
+    if(tclass == 1){
+        return "<6 °C";
+    }
+    if(tclass == 2){
+        return "6-9 °C";
+    }
+    if(tclass == 3){
+        return "9-12 °C";
+    }
+    if(tclass == 4){
+        return "12-15 °C";
+    }
+    if(tclass == 5){
+        return "15-18 °C";
+    }
+    if(tclass == 6){
+        return "18-21 °C";
+    }
+    if(tclass == 7){
+        return "21-24 °C";
+    }
+    if(tclass == 8){
+        return ">24 °C";
+    }
+    
+    return "nicht verfügbar"
+}
+
+
+// Tooltip
+// create a tooltip
+var Tooltip = d3.select("#map")
+  .append("div")
+  .attr("class", "tooltip")
+  .attr("position", "fixed")
+  .style("opacity", 0)
+  //.attr("display", "none")
+  .style("background-color", "#3f3d3d")
+  .style("border", "solid")
+  .style("color", "whitesmoke")
+  .style("border-width", "2px")
+  .style("border-radius", "5px")
+  .style("padding", "5px")
+
+// Three function that change the tooltip when user hover / move / leave a cell
+var mouseover = function(d) {
+  Tooltip.style("border-color", d3.select(this).attr("stroke"))
+        //.attr("display", "inline")
+        .style("left", (d3.event.pageX + 10) + "px")
+        .style("top", (d3.event.pageY - 40) + "px")
         
+      /*.style("left", (d3.mouse(this)[0]) + "px")
+        .style("top", (d3.mouse(this)[1]) + "px");*/
+    
         var featureClass = d3.select(this).attr("class");
-        var cx = d3.event.pageX + 10
-        var cy = d3.event.pageY - 39
         
-        Tooltip
-            .style("border-color", d3.select(this).attr("fill"))
-            .style("left", cx + "px")
-            .style("top", cy + "px")
-            
         // if mouse hovers over wetter, read in metadata from weather
-        if (d3.select(this).attr("class") == "wetter"){
-            Tooltip.html("<strong>"+d.properties.Name+"</strong>" + " (" + d.properties.Station + ")" + "<br>" + "Höhe (m.ü.M): " + d.properties.Höhe + "<br>" + "Lufttemperatur (°C): " + d.properties["Temperatur (°C)"] + "<br>" + "Luftfeuchtigkeit (%): " + d.properties["Luftfeuchte (%)"] + "<br>" + "Niederschlag (mm): " + d.properties["Niederschlag (mm)"])
+        if ( featureClass == "weather"){
+            numstring = d.properties.Time.toString();
+            var temp = d.properties["Temperatur (°C)"];
+            var feucht = d.properties["Luftfeuchtigkeit (%)"];
+            var precip = d.properties["Niederschlag (mm)"];
+            
+            if (temp == null){
+                temp = "n.v.";
+            }
+            if (feucht == null){
+                feucht = "n.v.";
+            }
+            if (precip == null){
+                precip = "n.v.";
+            }
+            
+            Tooltip.html("<strong>"+d.properties.Name+"</strong>" + " (" + d.properties.Station + ")" + "<br>" + "Höhe (m.ü.M): " + d.properties.Höhe + "<br>" + "Lufttemperatur (°C): " + temp + "<br>" + "Luftfeuchtigkeit (%): " + feucht + "<br>" + "Niederschlag (mm): " + precip + "<br>" + "" + "<br>" +
+                        numstring.substring(6,8) + "." + numstring.substring(4,6) +
+                        "." + numstring.substring(0,4) +
+                        " " + numstring.substring(8,10) + ":" +
+                        numstring.substring(10,12))
             
         // if mouse hovers over flussMess, read in metadata from flussMess    
-        } else if (d3.select(this).attr("class")== "flussMess"){
-            Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + "Wassertemperaturklasse: " + d.properties["temp-class"] + "<br>")
+        } else if(featureClass == "rivers") {
+            Tooltip.html("<strong>" + d.properties.name.substr(0, d.properties.name.length - 7) + "</strong>" + "<br>" + "Temperaturklasse: " + convertTempClass(d.properties["temp-class"]) + "<br>")
             
-        // if mouse hovers over hauptort
-        } else if (d3.select(this).attr("class")== "hauptorte"){
-            Tooltip.html("<strong>" + d.properties.ID1.substr(5) + "<strong>" )
-            
+        } else if(featureClass == "orte") {
+            Tooltip.html("<strong>" + d.properties.ID1.substr(5) + "</strong>" + " (Kanton " + d.properties.ID4 + ")")
         } else {
-            
-                var yesNo;
-                if(d.properties.DN > thresh){
-                    yesNo = "Ja! " + "<br>" + "&#x2714;" + "&#x1F601;" + "&#x1F44D;"
-                } else {yesNo = "Nein! " + "<br>" + "&#x274C;" + "&#x1F612;" + "&#x1F44E;"}
-                Tooltip.html("<strong>Badeindex: </strong>" + d.properties.DN +"<br>" + "Würdest du hier baden?: " + yesNo)
-            
-                }
-        
-        // Fill-Interaction
-        if(featureClass != "b_index_2"){
+            var yesNo;
+            if(d.properties.DN > threshold){
+                yesNo = "Ja! " + "<br>" + "&#x2714;" + "&#x1F601;" + "&#x1F44D;" ;
+            }else{
+                yesNo = "Nein! " + "<br>" + "&#x274C;" + "&#x1F612;" + "&#x1F44E;";
+            }
+            Tooltip.html("<strong>Badeindex: </strong>" + d.properties.DN +"<br>" + "Badewetter: " + yesNo)
+        }
+    // Fill-Interaction
+    if(!indizes.includes(featureClass)){
         var color = d3.select(this).attr("stroke");
-        d3.select(this).attr("fill", color);
-        }
-    }
-            
-    var mousemove = function(d) {
-        Tooltip.style("opacity", 1)
+        //console.log(color);
+        d3.select(this).style("fill", color)
+            .attr("fill-opacity", 1);
     }
     
-    var mouseleave = function(d) {
-        var featureClass = d3.select(this).attr("class");
-        Tooltip.style("opacity", 0)
+}
+var mousemove = function(d) {
+    Tooltip.style("opacity", 1)
+}
+var mouseleave = function(d) {
+    //Tooltip function
+    Tooltip.style("opacity", 0)
+    
+    console.log(d3.select(this).attr("class"))
+    
+    if(!indizes.includes(d3.select(this).attr("class"))){
         // Fill-Interaction
-        var color = d3.select(this).attr
-        if(featureClass == "flussMess"){
-            d3.select(this).style("fill", "lightblue");
-        } else if (featureClass == "wetter"){
-            d3.select(this).style("fill", "grey");
-        } else {
-            d3.select(this).style("fill", "black");
-        }
-        
+        d3.select(this).style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5);
     }
+}
 
+// Aktivieren einer spezifischen Genauigkeit (Ersatz für update Function)
+function accuracyChange(res){
+    if (res == 1){
+        gIndex11.attr("display", "block");
+        gIndex12.attr("display", "none");
+        gIndex21.attr("display", "block");
+        gIndex22.attr("display", "none");
+        gIndex13.attr("display", "none");
+        gIndex23.attr("display", "none");
+    }
+    if (res == 2){
+        gIndex11.attr("display", "none");
+        gIndex12.attr("display", "block");
+        gIndex21.attr("display", "none");
+        gIndex22.attr("display", "block");
+        gIndex13.attr("display", "none");
+        gIndex23.attr("display", "none");
+    }
+    if (res == 3){
+        gIndex11.attr("display", "none");
+        gIndex12.attr("display", "none");
+        gIndex21.attr("display", "none");
+        gIndex22.attr("display", "none");
+        gIndex13.attr("display", "block");
+        gIndex23.attr("display", "block");
+    }
+}
 
+// Event-Listener Slider für Genauigkeit
+d3.select("input#accuracy").on("change", function(d){
+    var accuracy = this.value;
+    // Update label
+    document.getElementById("lbaccur").innerHTML = "Wert: " + accuracy;
 
-// load geometries, add to svg, add tooltip mechanic and slider bars etc.
-function ready (error, infile1, infile2, infile3, infile4, infile5, infile6) {
+    // Update Layers
+    accuracyChange(accuracy);
+})
+
+/* ---------------------- Layer Initialization --------------- */
+// Badewetter-Index (displayed) Accuracy 1
+d3.json(index_res1, function(bw){
+    //console.log(bw);
     
-    
-    
-    //loading data for infile6
-    var b_index = topojson.feature(infile5, infile5.objects.badeindex_vect32).features;
-
-        gIndex.selectAll(".b_index")
-            .data(b_index)
-            .enter().append("path")
-            .attr("class", "b_index")
-            .attr("border-style", "solid")
-            .attr("fill", function(d,i){
-                var DN = b_index[i].properties.DN;
-                var DN2 = DN/100;
-                var DN3 = 1-DN2;
-                return d3.interpolateRdYlBu(DN3)
+    var in_vals = topojson.feature(bw, bw.objects.badeindex_vect32).features;
+                
+    var bw_index1 = gIndex11.selectAll(".index11")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index11")
+        //.style("stroke", "none")
+        //.attr("border-width", "0px")
+        .attr("fill", function(d,i){
+            var DN = in_vals[i].properties.DN;
+            var DN2 = 1-(DN/100)
+            return d3.interpolateYlOrRd(DN/100);
         })
-            .attr("border-width", "1px")
-            .attr("d", path);
-    
-    
-    //loading data for infile1
-    var kantone = topojson.feature(infile1, infile1.objects.kantone_lines).features;
-        //console.log("kantone", kantone)
+});
 
-        gKantone.selectAll(".kantone")
-            .data(kantone)
-            .enter().append("path")
-            .attr("class", "kantone")
-            .attr("fill", "white")
-            .attr("fill-opacity", "0")
-            .attr("d", path);
+// Badewetter-Index (displayed) Accuracy 2
+d3.json(index_res2, function(bw){
+    //console.log(bw);
     
-    //loading data for infile6
-    var b_index_2 = topojson.feature(infile5, infile5.objects.badeindex_vect32).features;
+    var in_vals = topojson.feature(bw, bw.objects.badeindex_vect44).features;
+                
+    var bw_index1 = gIndex12.selectAll(".index12")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index12")
+        //.style("stroke", "none")
+        //.attr("border-width", "0px")
+        .attr("fill", function(d,i){
+            var DN = in_vals[i].properties.DN;
+            var DN2 = 1-(DN/100)
+            return d3.interpolateYlOrRd(DN/100);
+        })
+});
 
-        gIndex2.selectAll(".b_index_2")
-            .data(b_index)
-            .enter().append("path")
-            .attr("class", "b_index_2")
-            .attr("fill-opacity", "0")
-            .attr("d", path)
+// Badewetter-Index (displayed) Accuracy 3
+d3.json(index_res3, function(bw){
+    //console.log(bw);
+    
+    var in_vals = topojson.feature(bw, bw.objects.badeindex_vect55).features;
+                
+    var bw_index1 = gIndex13.selectAll(".index13")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index13")
+        //.style("stroke", "none")
+        //.attr("border-width", "0px")
+        .attr("fill", function(d,i){
+            var DN = in_vals[i].properties.DN;
+            var DN2 = 1-(DN/100)
+            return d3.interpolateYlOrRd(DN/100);
+        })
+});
+
+// Kantone        
+d3.json(kantone, function(data){
+    //console.log(data);
+                
+    areas = gKantone.selectAll(".area")
+        .data(data.features)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "area")
+        .attr("fill", "white")
+        .attr("fill-opacity", 0)
+        .attr("stroke", "black")
+        .attr("stroke-width", 0.3);
+});
+
+// Badewetter-Index (hovering) Accuracy 1
+d3.json(index_res1, function(bw2){
+    //console.log(bw2);
+    
+    var in_vals = topojson.feature(bw2, bw2.objects.badeindex_vect32).features;
+                
+    var bw_index2 = gIndex21.selectAll(".index21")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index21")
+        .attr("fill-opacity", 0)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);
+});
+
+// Badewetter-Index (hovering) Accuracy 2
+d3.json(index_res2, function(bw2){
+    //console.log(bw2);
+    
+    var in_vals = topojson.feature(bw2, bw2.objects.badeindex_vect44).features;
+                
+    var bw_index2 = gIndex22.selectAll(".index21")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index21")
+        .attr("fill-opacity", 0)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);
+});
+
+// Badewetter-Index (hovering) Accuracy 3
+d3.json(index_res3, function(bw2){
+    //console.log(bw2);
+    
+    var in_vals = topojson.feature(bw2, bw2.objects.badeindex_vect55).features;
+                
+    var bw_index2 = gIndex23.selectAll(".index23")
+        .data(in_vals)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "index23")
+        .attr("fill-opacity", 0)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave);
+});
+
+// Seen        
+d3.json(lakes, function(lk){
+    //console.log(lk);
+                
+    var seen = gLakes.selectAll(".lakes")
+        .data(lk.features)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "lakes")
+        .attr("fill", "skyblue")
+        .attr("stroke", "black")
+        .attr("stroke-width", 0.1);    
+});
+
+// Hauptorte
+d3.json(hauptorte, function(orte){
+        //console.log(orte);
+        
+        var ortePoints = gHauptorte.selectAll(".orte")
+            .data(orte.features)
+            .enter()
+            .append("path")
+            .attr("d", path.pointRadius(radius))
+            .attr("class", "orte")
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5)
+            .attr("stroke", "black")
+            .attr("stroke-width", strkwdt)
             .on("mouseover", mouseover)
             .on("mousemove", mousemove)
             .on("mouseleave", mouseleave);
     
-
-    // loading data for infile4
-    var lakes = topojson.feature(infile4, infile4.objects.swissLakes).features;
-    //console.log("swissLakes", lakes)
+    //console.log(ortePoints.style("fill"))
     
-            gLakes.selectAll(".lakes")
-            .data(lakes)
-            .enter().append("path")
-            .attr("class", "lakes")
-            .attr("d", path);
-
-    
-    //loading data for infile7
-    var hauptorte = topojson.feature(infile6, infile6.objects.hauptorte).features;
-    //console.log("flussMess", flussMess)
-    
-        gHauptorte.selectAll(".hauptorte")
-            .data(hauptorte)
-            .enter().append("circle")
-            .attr("class", "hauptorte")
-            .attr("r", point_radius+0.2)
-            .attr("fill-opacity", "1")
-            .attr("fill", "black")
-            .attr("stroke", "grey")
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave)
-            .attr("cx", function(d){
-                // get longitude from data (coordinates [long/lat])
-                var coords = projection(d.geometry.coordinates)
-                //console.log("long", coords)
-                return coords[0];
-            })
-        
-            .attr("cy",  function(d){
-                // get latitude from data
-                var coords = projection(d.geometry.coordinates)
-                //console.log("lat", coords)
-                return coords[1];
-            })
-    
-    //loading data for infile2
-    var flussMess = topojson.feature(infile2, infile2.objects.flussdaten).features;
-    //console.log("flussMess", flussMess)
-    
-        gflussMess.selectAll(".flussMess")
-            .data(flussMess)
-            .enter().append("circle")
-            .attr("class", "flussMess")
-            .attr("r", point_radius)
-            .attr("fill-opacity", "0.7")
-            .attr("fill", "lightblue")
-            .attr("stroke", "blue")
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave)
-            .attr("cx", function(d){
-                // get longitude from data (coordinates [long/lat])
-                var coords = projection(d.geometry.coordinates)
-                //console.log("long", coords)
-                return coords[0];
-            })
-        
-            .attr("cy",  function(d){
-                // get latitude from data
-                var coords = projection(d.geometry.coordinates)
-                //console.log("lat", coords)
-                return coords[1];
-            })
-        
-    // loading data for infile3
-    var wetter = topojson.feature(infile3, infile3.objects.weatherstation).features;
-    //console.log("wetter", wetter)
-        
-            gWetter.selectAll(".wetter")
-            .data(wetter)
-            .enter().append("circle")
-            .attr("class", "wetter")
-            .attr("r", point_radius)
-            .attr("fill-opacity", "0.7")
-            .attr("fill", "grey")
-            .attr("stroke", "black")
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave)
-            .attr("cx", function(d){
-                // get longitude from data (coordinates [long/lat])
-                var coords = projection(d.geometry.coordinates)
-                return coords[0];
-            })
-        
-            .attr("cy",  function(d){
-                // get latitude from data
-                var coords = projection(d.geometry.coordinates)
-                return coords[1];
-            })
+    // Checkbox Interaction
+    d3.select("#places").on("change", function(d){
+        checked =  d3.select("#places").property("checked");
+        if (checked) {
+            ortePoints.attr("display", "block")
             
+        } else {
+            ortePoints.attr("display", "none")
+        }
+    })    
+});
+
+// Flussdaten
+d3.json(riverdata, function(rivertemps){
+        //console.log(rivertemps);        
+        
+        var riverPoints = gRiver.selectAll(".rivers")
+            .data(rivertemps.features)
+            .enter()
+            .append("path")
+            .attr("d", path.pointRadius(radius))
+            .attr("class", "rivers")
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5)
+            .attr("stroke", "blue")
+            .attr("stroke-width", strkwdt)
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);
+    
+        // Checkbox Interaction
+        d3.select("#river").on("change", function(d){
+            checked =  d3.select("#river").property("checked");
+            if (checked) {
+                riverPoints.attr("display", "block")
+
+            } else {
+                riverPoints.attr("display", "none")
+            }
+        })
+    
+    //console.log(rivertemps.features[1].geometry.coordinates[1])
+        
+});
+
+// Wetterstationen
+d3.json(weatherdata, function(weather){
+        //console.log(weather);
+        
+        var weatherPoints = gWeather.selectAll(".weather")
+            .data(weather.features)
+            .enter()
+            .append("path")
+            .attr("d", path.pointRadius(radius))
+            .attr("class", "weather")
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5)
+            .attr("stroke", "red")
+            .attr("stroke-width", strkwdt)
+            .on("mouseover", mouseover)
+            .on("mousemove", mousemove)
+            .on("mouseleave", mouseleave);
+    
+        // Checkbox Interaction
+        d3.select("#meteo").on("change", function(d){
+            checked =  d3.select("#meteo").property("checked");
+            if (checked) {
+                weatherPoints.attr("display", "block")
+
+            } else {
+                weatherPoints.attr("display", "none")
+            }
+        })
+        
+});
+
+// --------------------------------------
+// Colorscale and Legend Creation
+var legend = canvas.append("g")
+                .attr("class", "legendSequential")
+                .attr("transform", "translate(190,580)");
+
+// Gradient-Scale
+var lingrad = legend.append("linearGradient")
+                .attr("id", "grad1")
+                .attr("x1", "0%")
+                .attr("y1", "0%")
+                .attr("x2", "100%")
+                .attr("y2", "0%");
+lingrad.append("stop")
+    .attr("offset", "0%")
+    .style("stop-color", d3.interpolateYlOrRd(0))
+    .style("stop-opacity", 1);
+lingrad.append("stop")
+    .attr("offset", "50%")
+    .style("stop-color", d3.interpolateYlOrRd(0.5))
+    .style("stop-opacity", 1);
+lingrad.append("stop")
+    .attr("offset", "100%")
+    .style("stop-color", d3.interpolateYlOrRd(1))
+    .style("stop-opacity", 1);
+
+var bbox = legend.node().getBoundingClientRect();
+var width = bbox.width;
+var height = bbox.height;
+
+// Colorbar
+legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 550)
+    .attr("height", 20)
+    .attr("fill", "url(#grad1)")
+    .attr("stroke", "whitesmoke");
+// Ticks
+legend.append("text")
+    .attr("x", -1)
+    .attr("y", 27)
+    .style("font-family", "Open Sans")
+    .style("font-size", "10px")
+    .style("fill", "whitesmoke")
+    .text("I")
+legend.append("text")
+    .attr("x", 275)
+    .attr("y", 27)
+    .style("font-family", "Open Sans")
+    .style("font-size", "10px")
+    .style("fill", "whitesmoke")
+    .text("I")
+legend.append("text")
+    .attr("x", 548.5)
+    .attr("y", 27)
+    .style("font-family", "Open Sans")
+    .style("font-size", "10px")
+    .style("fill", "whitesmoke")
+    .text("I")
+
+// Quantities
+legend.append("text")
+    .attr("x", -3)
+    .attr("y", 40)
+    .style("font-family", "Open Sans")
+    .style("font-size", "12px")
+    .style("fill", "whitesmoke")
+    .text("0")
+legend.append("text")
+    .attr("x", 269.5)
+    .attr("y", 40)
+    .style("font-family", "Open Sans")
+    .style("font-size", "12px")
+    .style("fill", "whitesmoke")
+    .text("50")
+legend.append("text")
+    .attr("x", 539.5)
+    .attr("y", 40)
+    .style("font-family", "Open Sans")
+    .style("font-size", "12px")
+    .style("fill", "whitesmoke")
+    .text("100")
+
+//Title
+legend.append("text")
+    .attr("x", 0)
+    .attr("y", -10)
+    .style("font-family", "Open Sans")
+    .style("font-size", "15px")
+    .style("fill", "whitesmoke")
+    .style("font-weight", "bold")
+    .text("Index-Skala")
+
+
+// Punkte-Legende
+var pointLegend = canvas.append("g")
+                    .attr("class", "pointLegend")
+                    .attr("transform", "translate(750, 500)")
+                    .attr("color", "lightgrey");
+
+//Title
+pointLegend.append("text")
+    .attr("x", 5)
+    .attr("y", -20)
+    .style("font-family", "Open Sans")
+    .style("font-size", "15px")
+    .style("font-weight", "bold")
+    .style("fill", "whitesmoke")
+    .text("Punktdaten")
+
+
+// Circles + Legend-Text
+var legRad = 6;
+
+pointLegend.append("circle")
+    .attr("cx", 10)
+    .attr("cy", 0)
+    .attr("r", legRad)
+    .attr("fill", "#3f3d3d")
+    .attr("stroke", "black")
+    .attr("stroke-width", 2)
+    .attr("class", "orte_legend")
+    .attr("cursor", "pointer")
+    .on("mouseover", makeBig)
+    .on("mouseleave", backSmall);
+
+
+pointLegend.append("circle")
+    .attr("cx", 10)
+    .attr("cy", 20)
+    .attr("r", legRad)
+    .attr("fill", "#3f3d3d")
+    .attr("stroke", "blue")
+    .attr("stroke-width", 2)
+    .attr("class", "river_legend")
+    .attr("cursor", "pointer")
+    .on("mouseover", makeBig)
+    .on("mouseleave", backSmall);
+
+pointLegend.append("circle")
+    .attr("cx", 10)
+    .attr("cy", 40)
+    .attr("r", legRad)
+    .attr("fill", "#3f3d3d")
+    .attr("stroke", "red")
+    .attr("stroke-width", 2)
+    .attr("class", "weather_legend")
+    .attr("cursor", "pointer")
+    .on("mouseover", makeBig)
+    .on("mouseleave", backSmall);
+
+pointLegend.append("text")
+    .attr("x", 25)
+    .attr("y", 5)
+    .style("font-family", "Open Sans")
+    .style("font-size", "15px")
+    .style("fill", "whitesmoke")
+    .text("Kantonshauptorte")
+pointLegend.append("text")
+    .attr("x", 25)
+    .attr("y", 25)
+    .style("font-family", "Open Sans")
+    .style("font-size", "15px")
+    .style("fill", "whitesmoke")
+    .text("Flussmessstationen")
+pointLegend.append("text")
+    .attr("x", 25)
+    .attr("y", 45)
+    .style("font-family", "Open Sans")
+    .style("font-size", "15px")
+    .style("fill", "whitesmoke")
+    .text("Wetterstationen")
+
+function makeBig(){
+    var which = d3.select(this).attr("class")
+    
+    if(which == "orte_legend"){
+        gHauptorte.selectAll("path").transition()
+            .duration(1000)
+            .attr("d", path.pointRadius(6))
+            .style("fill", "black")
+            .attr("fill-opacity", 1);
+        
+        d3.select(this).style("fill", "black");
+    }
+    if(which == "river_legend"){
+        gRiver.selectAll("path").transition()
+            .duration(1000)
+            .attr("d", path.pointRadius(6))
+            .style("fill", "blue")
+            .attr("fill-opacity", 1)
+        
+        d3.select(this).style("fill", "blue");
+    }
+    if(which == "weather_legend"){
+        gWeather.selectAll("path").transition()
+            .duration(1000)
+            .attr("d", path.pointRadius(6))
+            .style("fill", "red")
+            .attr("fill-opacity", 1)
+        
+        d3.select(this).style("fill", "red");
+    }
 }
 
-//------------------------- EVENT LISTENERS USER INPUT ---------------------------------------    
+function backSmall(){
+    var which = d3.select(this).attr("class");
     
-function updateRender(newFile){
-    d3.json(newFile, function(d){
-        
-    var getIt = newFile.substr(9,16);
-        
-    var newData = topojson.feature(d, d.objects[getIt]).features;
-        
-        // Read in new Data (Background)
-        gIndex.selectAll(".b_index")
-            .data(newData)
-            .enter()
-            .append("path")
-            .attr("class", "b_index");
-        
-        // update new Data
-        gIndex.selectAll(".b_index")
-            .data(newData)
-            .attr("d", path)
-            .attr("fill", function(d,i){
-                var DN = newData[i].properties.DN;
-                var DN2 = DN/100;
-                var DN3 = 1-DN2;
-                return d3.interpolateRdYlBu(DN3)
-        });
-        
-        // update/exit new Data
-        gIndex.selectAll(".b_index")
-            .data(newData)
-            .exit()
-            .remove();
-        
-        
-        // same procedure as every year (foreground)
-        gIndex2.selectAll(".b_index_2")
-            .data(newData)
-            .enter()
-            .append("path")
-            .attr("class", "b_index_2")
-            .attr("fill-opacity", "0")
-            .attr("d", path)
-            .on("mouseover", mouseover)
-            .on("mousemove", mousemove)
-            .on("mouseleave", mouseleave);;
-        
-        gIndex2.selectAll(".b_index_2")
-            .data(newData)
-            .enter().append("path")
-            .attr("class", "b_index_2")
-            
-        
-        gIndex2.selectAll(".b_index_2")
-            .data(newData)
-            .exit()
-            .remove();
-        
-
-        });
-};   
-
-// adding event listener for slider to allow user to control spatial accuracy of Badeindex
-d3.select("#BufferSlider").on("change", function(d){
-    var value = this.value;
-    var newFile;
-    console.log("Value BufferSlider:" + value);
-
-    if (value == 0){var newFile = "data/GIS/badeindex_vect32.json";
-
-    } else if (value == 1){var newFile = "data/GIS/badeindex_vect44.json";
-
-    } else {var newFile = "data/GIS/badeindex_vect55.json";}
-
-    updateRender(newFile);
-
-    });
-
-// adding event listener for slider to allow for user defined calculation of Badeindex
-d3.select("#IndexSlider").on("change", function(d){
-    var value = this.value;
-    console.log(value)
-})    
-
-// enable/disable Wettermesstationen
-d3.select("#CheckLayer1").on("change",function(d){
-    checked = d3.select("#CheckLayer1").property("checked")
-
-    if (checked) {
-        gWetter.selectAll(".wetter")
-            .transition()
+    if(which == "orte_legend"){
+        gHauptorte.selectAll("path").transition()
             .duration(1000)
-            .attr("display", "block")
-
-    } else {
-        gWetter.selectAll(".wetter")
-            .transition()
+            .attr("d", path.pointRadius(radius))
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5);
+        
+        d3.select(this).style("fill", "#3f3d3d");
+    }
+    if(which == "river_legend"){
+        gRiver.selectAll("path").transition()
             .duration(1000)
-            .attr("display", "none")
+            .attr("d", path.pointRadius(radius))
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5)
+        
+        d3.select(this).style("fill", "#3f3d3d");
     }
-    });
-
-// enable/disable Flusstemperaturmesstationen
-d3.select("#CheckLayer2").on("change",function(d){
-    checked = d3.select("#CheckLayer2").property("checked")
-
-    if (checked) {
-        gflussMess.selectAll(".flussMess").transition().duration(1000).attr("display", "block")
-
-    } else {
-        gflussMess.selectAll(".flussMess").transition().duration(1000).attr("display", "none")
+    if(which == "weather_legend"){
+        gWeather.selectAll("path").transition()
+            .duration(1000)
+            .attr("d", path.pointRadius(radius))
+            .style("fill", "#3f3d3d")
+            .attr("fill-opacity", 0.5)
+        
+        d3.select(this).style("fill", "#3f3d3d");
     }
-    });
+}
