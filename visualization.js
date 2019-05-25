@@ -1,3 +1,16 @@
+/* This stylesheet was created within the Open Data Lecture 2019 at the Institute for digital sustainability (Digitale Nachhaltigkeit)
+	at the University of Bern.
+	
+	The authors of this stylesheet are:
+	-Benjamin Schüpbach
+	-Christoph von Matt
+	
+	Last update: 24.05.2019
+	
+	Licence: CC-BY-SA
+	https://creativecommons.org/licenses/by-sa/4.0/
+
+*/
 /* ---------------------- Settings ------------------------ */
 // Set up canvas and Layer-Groups
 var canvas = d3.select("#map")
@@ -201,7 +214,7 @@ var mouseover = function(d) {
   Tooltip.style("border-color", d3.select(this).attr("stroke"))
         //.attr("display", "inline")
         .style("left", (d3.event.pageX + 10) + "px")
-        .style("top", (d3.event.pageY - 40) + "px")
+        .style("top", (d3.event.pageY - 100) + "px")
         
       /*.style("left", (d3.mouse(this)[0]) + "px")
         .style("top", (d3.mouse(this)[1]) + "px");*/
